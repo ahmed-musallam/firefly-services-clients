@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v1.0.0...v1.1.0) (2025-10-23)
+
+### Features
+
+- make package public ([b19d2c0](https://github.com/ahmed-musallam/firefly-services-clients/commit/b19d2c0bd3ff8d899afd03ef54b15ec36a8d9325))
+
 # 1.0.0 (2025-10-23)
 
 ### Bug Fixes
