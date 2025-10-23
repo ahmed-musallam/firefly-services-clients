@@ -23,7 +23,8 @@ This document summarizes all the changes made to configure the Adobe Firefly Ser
 
 #### Package Configuration (`package.json`)
 
-- ✅ Set package name: `@musallam/firefly-services-client`
+- ✅ Set package name: `@musallam/firefly-services-clients`
+- ✅ Configured as public package with `publishConfig.access: "public"`
 - ✅ Configured proper exports for ESM and CommonJS
 - ✅ Set `main`, `module`, and `types` fields
 - ✅ Added `files` array to include only `dist` folder
