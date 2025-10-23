@@ -1,5 +1,5 @@
 {
-  "name": "@musallam/firefly-services-client",
+  "name": "@musallam/firefly-services-clients",
   "version": "0.0.0",
   "description": "TypeScript client library for Adobe Firefly Services API",
   "type": "module",
@@ -40,10 +40,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/musallam/firefly-services-clients.git"
+    "url": "git+https://github.com/ahmed-musallam/firefly-services-clients.git"
   },
   "bugs": {
-    "url": "https://github.com/musallam/firefly-services-clients/issues"
+    "url": "https://github.com/ahmed-musallam/firefly-services-clients/issues"
   },
   "homepage": "https://github.com/musallam/firefly-services-clients#readme",
   "devDependencies": {
