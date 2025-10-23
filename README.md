@@ -1,4 +1,4 @@
-# @musallam/firefly-services-client
+# @musallam/firefly-services-clients
 
 TypeScript client library for [Adobe Firefly Services API](https://developer.adobe.com/firefly-services/docs/guides/)
 
@@ -19,7 +19,7 @@ TypeScript client library for [Adobe Firefly Services API](https://developer.ado
 ## Installation
 
 ```bash
-npm install @musallam/firefly-services-client
+npm install @musallam/firefly-services-clients
 ```
 
 ## Quick Start
@@ -27,7 +27,7 @@ npm install @musallam/firefly-services-client
 ### Using OAuth2 Client Credentials (Recommended)
 
 ```typescript
-import { FireflyClient, IMSClient } from '@musallam/firefly-services-client';
+import { FireflyClient, IMSClient } from '@musallam/firefly-services-clients';
 
 // Initialize IMS client with your credentials
 const imsClient = new IMSClient({
@@ -56,7 +56,7 @@ console.log('Generated images:', jobStatus.outputs);
 ### Using Pre-issued Access Token
 
 ```typescript
-import { FireflyClient, TokenIMSClient } from '@musallam/firefly-services-client';
+import { FireflyClient, TokenIMSClient } from '@musallam/firefly-services-clients';
 
 const imsClient = new TokenIMSClient({
   accessToken: 'YOUR_ACCESS_TOKEN',
@@ -116,7 +116,7 @@ import {
   ShotAngle,
   ShotSize,
   ModelVersion,
-} from '@musallam/firefly-services-client';
+} from '@musallam/firefly-services-clients';
 ```
 
 ## Examples

@@ -38,6 +38,9 @@
   ],
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ahmed-musallam/firefly-services-clients.git"
@@ -45,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/ahmed-musallam/firefly-services-clients/issues"
   },
-  "homepage": "https://github.com/musallam/firefly-services-clients#readme",
+  "homepage": "https://github.com/ahmed-musallam/firefly-services-clients#readme",
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
