@@ -2,24 +2,24 @@
  * Image upload operation
  */
 
-import type { IIMSClient } from "../../ims/ims-client.interface";
-import type { UploadImageResponse } from "../types/upload-image";
+import type { IIMSClient } from '../../ims/ims-client.interface';
+import type { UploadImageResponse } from '../types/upload-image';
 
 export async function uploadImage(
   imsClient: IIMSClient,
   baseUrl: string,
   imageData: Uint8Array | Blob | ArrayBuffer,
-  contentType: "image/jpeg" | "image/png" | "image/webp",
+  contentType: 'image/jpeg' | 'image/png' | 'image/webp'
 ): Promise<UploadImageResponse> {
   const url = `${baseUrl}/v2/storage/image`;
 
   const headers: Record<string, string> = {
-    "Content-Type": contentType,
+    'Content-Type': contentType,
     ...(await imsClient.getAuthHeaders()),
   };
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: imageData as BodyInit,
   });
@@ -27,13 +27,13 @@ export async function uploadImage(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Firefly uploadImage failed: ${response.status} ${response.statusText} - ${errorText}`,
+      `Firefly uploadImage failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }
 
   const data = (await response.json()) as UploadImageResponse;
   if (!data.images || data.images.length === 0) {
-    throw new Error("Firefly API response missing image IDs");
+    throw new Error('Firefly API response missing image IDs');
   }
   return data;
 }

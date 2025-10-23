@@ -21,8 +21,8 @@ export type ExpandImageV3AsyncRequest = {
   numVariations?: number; // 1-4
   placement?: {
     alignment?: {
-      horizontal?: "center" | "left" | "right";
-      vertical?: "center" | "top" | "bottom";
+      horizontal?: 'center' | 'left' | 'right';
+      vertical?: 'center' | 'top' | 'bottom';
     };
     inset?: {
       top?: number;

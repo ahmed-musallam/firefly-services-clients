@@ -3,7 +3,7 @@
  * See: https://developer.adobe.com/developer-console/docs/guides/authentication/ServerToServerAuthentication/ims#fetching-access-tokens
  */
 
-import type { IIMSClient, IMSClientOptions } from "./ims-client.interface";
+import type { IIMSClient, IMSClientOptions } from './ims-client.interface';
 
 type IMSTokenResponse = {
   access_token: string;
@@ -23,7 +23,7 @@ export class IMSClient implements IIMSClient {
     this.clientId = options.clientId;
     this.clientSecret = options.clientSecret;
     this.scopes = options.scopes;
-    this.tokenEndpoint = "https://ims-na1.adobelogin.com/ims/token/v3";
+    this.tokenEndpoint = 'https://ims-na1.adobelogin.com/ims/token/v3';
   }
 
   /**
@@ -44,21 +44,21 @@ export class IMSClient implements IIMSClient {
   private toURLSearchParamsString(params: Record<string, string>): string {
     return Object.entries(params)
       .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-      .join("&");
+      .join('&');
   }
 
   private async fetchAccessToken(): Promise<IMSTokenResponse> {
     const params = this.toURLSearchParamsString({
       client_id: this.clientId,
       client_secret: this.clientSecret,
-      grant_type: "client_credentials",
-      scope: this.scopes.join(","),
+      grant_type: 'client_credentials',
+      scope: this.scopes.join(','),
     });
 
     const response = await fetch(this.tokenEndpoint, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: params.toString(),
     });
@@ -66,13 +66,13 @@ export class IMSClient implements IIMSClient {
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `IMS token request failed: ${response.status} ${response.statusText} - ${errorText}`,
+        `IMS token request failed: ${response.status} ${response.statusText} - ${errorText}`
       );
     }
 
     const data = (await response.json()) as IMSTokenResponse;
     if (!data.access_token) {
-      throw new Error("IMS token response missing access_token");
+      throw new Error('IMS token response missing access_token');
     }
     return data;
   }
@@ -84,7 +84,7 @@ export class IMSClient implements IIMSClient {
     const accessToken = await this.getAccessToken();
     return {
       Authorization: `Bearer ${accessToken}`,
-      "x-api-key": this.clientId,
+      'x-api-key': this.clientId,
     };
   }
 }

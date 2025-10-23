@@ -18,12 +18,12 @@ export type GenerateObjectCompositeV3AsyncRequest = {
       url?: string;
     };
   };
-  contentClass?: "photo" | "art";
+  contentClass?: 'photo' | 'art';
   numVariations?: number; // 1-4
   placement?: {
     alignment?: {
-      horizontal?: "center" | "left" | "right";
-      vertical?: "center" | "top" | "bottom";
+      horizontal?: 'center' | 'left' | 'right';
+      vertical?: 'center' | 'top' | 'bottom';
     };
     inset?: {
       top?: number;

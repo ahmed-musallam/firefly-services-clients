@@ -2,29 +2,29 @@
  * Video generation operation
  */
 
-import type { IIMSClient } from "../../ims/ims-client.interface";
+import type { IIMSClient } from '../../ims/ims-client.interface';
 import type {
   GenerateVideoV3AsyncRequest,
   GenerateVideoV3AsyncResponse,
-} from "../types/generate-video";
-import type { VideoModelVersion } from "../types/common";
+} from '../types/generate-video';
+import type { VideoModelVersion } from '../types/common';
 
 export async function generateVideoAsync(
   imsClient: IIMSClient,
   baseUrl: string,
   requestBody: GenerateVideoV3AsyncRequest,
-  modelVersion?: VideoModelVersion,
+  modelVersion?: VideoModelVersion
 ): Promise<GenerateVideoV3AsyncResponse> {
   const url = `${baseUrl}/v3/videos/generate`;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...(await imsClient.getAuthHeaders()),
   };
-  headers["x-model-version"] = modelVersion ?? "video1_standard";
+  headers['x-model-version'] = modelVersion ?? 'video1_standard';
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify(requestBody),
   });
@@ -32,13 +32,13 @@ export async function generateVideoAsync(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Firefly generateVideoAsync failed: ${response.status} ${response.statusText} - ${errorText}`,
+      `Firefly generateVideoAsync failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }
 
   const data = (await response.json()) as GenerateVideoV3AsyncResponse;
   if (!data.jobId) {
-    throw new Error("Firefly API response missing jobId");
+    throw new Error('Firefly API response missing jobId');
   }
   return data;
 }

@@ -2,31 +2,31 @@
  * Similar images generation operation
  */
 
-import type { IIMSClient } from "../../ims/ims-client.interface";
+import type { IIMSClient } from '../../ims/ims-client.interface';
 import type {
   GenerateSimilarImagesV3AsyncRequest,
   GenerateSimilarImagesV3AsyncResponse,
-} from "../types/generate-similar";
-import type { ModelVersion } from "../types/common";
+} from '../types/generate-similar';
+import type { ModelVersion } from '../types/common';
 
 export async function generateSimilarImagesAsync(
   imsClient: IIMSClient,
   baseUrl: string,
   requestBody: GenerateSimilarImagesV3AsyncRequest,
-  modelVersion?: ModelVersion,
+  modelVersion?: ModelVersion
 ): Promise<GenerateSimilarImagesV3AsyncResponse> {
   const url = `${baseUrl}/v3/images/generate-similar-async`;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...(await imsClient.getAuthHeaders()),
   };
   if (modelVersion) {
-    headers["x-model-version"] = modelVersion;
+    headers['x-model-version'] = modelVersion;
   }
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify(requestBody),
   });
@@ -34,13 +34,13 @@ export async function generateSimilarImagesAsync(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Firefly generateSimilarImagesAsync failed: ${response.status} ${response.statusText} - ${errorText}`,
+      `Firefly generateSimilarImagesAsync failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }
 
   const data = (await response.json()) as GenerateSimilarImagesV3AsyncResponse;
   if (!data.jobId) {
-    throw new Error("Firefly API response missing jobId");
+    throw new Error('Firefly API response missing jobId');
   }
   return data;
 }

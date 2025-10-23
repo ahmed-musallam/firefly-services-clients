@@ -3,12 +3,7 @@
  * References: .cursor/schema/generate_video_api.json
  */
 
-import type {
-  CameraMotionType,
-  PromptStyleType,
-  ShotAngleType,
-  ShotSizeType,
-} from "../constants";
+import type { CameraMotionType, PromptStyleType, ShotAngleType, ShotSizeType } from '../constants';
 
 export type GenerateVideoV3AsyncRequest = {
   // See OpenAPI: #/components/schemas/GenerateVideoRequestV3

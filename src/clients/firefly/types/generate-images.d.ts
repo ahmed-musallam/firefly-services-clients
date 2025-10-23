@@ -3,7 +3,7 @@
  * References: .cursor/schema/image_generation_async_v3.json
  */
 
-import type { JobStatusType } from "../constants";
+import type { JobStatusType } from '../constants';
 
 export type GenerateImagesV3AsyncRequest = {
   // See OpenAPI: #/components/schemas/GenerateImagesRequestV3
@@ -40,7 +40,7 @@ export interface GenerateImageJobBase {
  * GenerateImage job response for a pending/running job
  */
 export interface GenerateImageJobInProgress extends GenerateImageJobBase {
-  status: "pending" | "running";
+  status: 'pending' | 'running';
   // Optionally, progress or ETA fields may be present
   progress?: number; // 0-100
   etaSeconds?: number;
@@ -50,7 +50,7 @@ export interface GenerateImageJobInProgress extends GenerateImageJobBase {
  * GenerateImage job response for a succeeded job
  */
 export interface GenerateImageJobSucceeded extends GenerateImageJobBase {
-  status: "succeeded";
+  status: 'succeeded';
   // The result field(s) will contain the generated image(s) and metadata
   result: {
     images: Array<{
@@ -68,7 +68,7 @@ export interface GenerateImageJobSucceeded extends GenerateImageJobBase {
  * GenerateImage job response for a failed job
  */
 export interface GenerateImageJobFailed extends GenerateImageJobBase {
-  status: "failed";
+  status: 'failed';
   error: {
     code: string;
     message: string;
@@ -80,7 +80,7 @@ export interface GenerateImageJobFailed extends GenerateImageJobBase {
  * GenerateImage job response for a canceled job
  */
 export interface GenerateImageJobCanceled extends GenerateImageJobBase {
-  status: "canceled";
+  status: 'canceled';
   reason?: string;
 }
 

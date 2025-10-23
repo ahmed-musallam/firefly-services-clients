@@ -15,23 +15,19 @@ import {
   ModelVersion,
   VideoModelVersion,
   JobStatus,
-} from "../../../lib/clients/firefly";
+} from '../../../lib/clients/firefly';
 ```
 
 ### In Your Frontend
 
 ```typescript
-import {
-  CameraMotion,
-  ShotAngle,
-  FireflyProxyClient,
-} from "../utils/fireflyProxyClient";
+import { CameraMotion, ShotAngle, FireflyProxyClient } from '../utils/fireflyProxyClient';
 
 // Use constants for type-safe parameter values
 const client = new FireflyProxyClient({ imsToken, imsOrgId });
 
 await client.generateVideoAsync({
-  prompt: "a mountain landscape",
+  prompt: 'a mountain landscape',
   sizes: [{ width: 1920, height: 1080 }],
   videoSettings: {
     cameraMotion: CameraMotion.ZOOM_IN, // ✅ Type-safe
@@ -45,7 +41,7 @@ await client.generateVideoAsync({
 Use constants to populate dropdowns, radio buttons, etc:
 
 ```tsx
-import { ShotAngle } from "../utils/fireflyProxyClient";
+import { ShotAngle } from '../utils/fireflyProxyClient';
 
 // Get all available shot angles
 const shotAngleOptions = Object.entries(ShotAngle).map(([key, value]) => ({
@@ -154,7 +150,7 @@ All constants follow this pattern:
 
 ```typescript
 export const ConstantName = {
-  KEY_NAME: "api value",
+  KEY_NAME: 'api value',
   // ...
 } as const;
 

@@ -54,17 +54,13 @@ firefly/
 ### Basic Import
 
 ```typescript
-import { FireflyClient } from "./clients/firefly";
+import { FireflyClient } from './clients/firefly';
 ```
 
 ### Import Specific Types
 
 ```typescript
-import type {
-  FireflyClient,
-  GenerateImagesV3AsyncRequest,
-  ModelVersion,
-} from "./clients/firefly";
+import type { FireflyClient, GenerateImagesV3AsyncRequest, ModelVersion } from './clients/firefly';
 ```
 
 ### Using the Client
@@ -72,15 +68,15 @@ import type {
 ```typescript
 const fireflyClient = new FireflyClient({
   imsClient: myImsClient,
-  baseUrl: "https://firefly-api.adobe.io", // optional
+  baseUrl: 'https://firefly-api.adobe.io', // optional
 });
 
 // Generate images
 const response = await fireflyClient.generateImagesAsync(
   {
-    prompt: "A sunset over mountains",
+    prompt: 'A sunset over mountains',
   },
-  "image4_ultra",
+  'image4_ultra'
 );
 
 // Get job status
@@ -106,16 +102,13 @@ To add a new operation:
 2. **Create operation**: `operations/my-operation.ts`
 
    ```typescript
-   import type { IMSClient } from "../../ims-client";
-   import type {
-     MyOperationRequest,
-     MyOperationResponse,
-   } from "../types/my-operation";
+   import type { IMSClient } from '../../ims-client';
+   import type { MyOperationRequest, MyOperationResponse } from '../types/my-operation';
 
    export async function myOperation(
      imsClient: IMSClient,
      baseUrl: string,
-     requestBody: MyOperationRequest,
+     requestBody: MyOperationRequest
    ): Promise<MyOperationResponse> {
      // Implementation
    }
@@ -133,10 +126,7 @@ To add a new operation:
 
 4. **Export types**: `index.ts`
    ```typescript
-   export type {
-     MyOperationRequest,
-     MyOperationResponse,
-   } from "./types/my-operation";
+   export type { MyOperationRequest, MyOperationResponse } from './types/my-operation';
    ```
 
 ## 🧪 Testing
@@ -144,14 +134,12 @@ To add a new operation:
 Each operation can be tested independently:
 
 ```typescript
-import * as generateImagesOp from "./operations/generate-images";
-import { mockIMSClient } from "./test-utils";
+import * as generateImagesOp from './operations/generate-images';
+import { mockIMSClient } from './test-utils';
 
-const result = await generateImagesOp.generateImagesAsync(
-  mockIMSClient,
-  "https://test.adobe.io",
-  { prompt: "test" },
-);
+const result = await generateImagesOp.generateImagesAsync(mockIMSClient, 'https://test.adobe.io', {
+  prompt: 'test',
+});
 ```
 
 ## 📚 Related Files

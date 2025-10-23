@@ -2,26 +2,26 @@
  * Object composite generation operation
  */
 
-import type { IIMSClient } from "../../ims/ims-client.interface";
+import type { IIMSClient } from '../../ims/ims-client.interface';
 import type {
   GenerateObjectCompositeV3AsyncRequest,
   GenerateObjectCompositeV3AsyncResponse,
-} from "../types/generate-object-composite";
+} from '../types/generate-object-composite';
 
 export async function generateObjectCompositeAsync(
   imsClient: IIMSClient,
   baseUrl: string,
-  requestBody: GenerateObjectCompositeV3AsyncRequest,
+  requestBody: GenerateObjectCompositeV3AsyncRequest
 ): Promise<GenerateObjectCompositeV3AsyncResponse> {
   const url = `${baseUrl}/v3/images/generate-object-composite-async`;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
     ...(await imsClient.getAuthHeaders()),
   };
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers,
     body: JSON.stringify(requestBody),
   });
@@ -29,14 +29,13 @@ export async function generateObjectCompositeAsync(
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Firefly generateObjectCompositeAsync failed: ${response.status} ${response.statusText} - ${errorText}`,
+      `Firefly generateObjectCompositeAsync failed: ${response.status} ${response.statusText} - ${errorText}`
     );
   }
 
-  const data =
-    (await response.json()) as GenerateObjectCompositeV3AsyncResponse;
+  const data = (await response.json()) as GenerateObjectCompositeV3AsyncResponse;
   if (!data.jobId) {
-    throw new Error("Firefly API response missing jobId");
+    throw new Error('Firefly API response missing jobId');
   }
   return data;
 }
