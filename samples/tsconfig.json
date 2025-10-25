@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": false
+  },
+  "include": [
+    "*.ts",
+    "scripts/generate-similar-sample.ts",
+    "scripts/generative-expand-sample.ts",
+    "scripts/generative-fill-sample.ts",
+    "scripts/image-generation-sample.ts",
+    "scripts/object-composite-sample.ts",
+    "scripts/upload-image-sample.ts",
+    "scripts/video-generation-sample.ts",
+    "scripts/custom-models-sample.ts"
+  ]
+}

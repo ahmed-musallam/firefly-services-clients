@@ -1,0 +1,21 @@
+{
+  "name": "firefly-samples",
+  "version": "1.0.0",
+  "description": "Sample scripts demonstrating Adobe Firefly Services API usage",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "image-generation": "npx tsx scripts/image-generation-sample.ts",
+    "generate-similar": "npx tsx scripts/generate-similar-sample.ts",
+    "object-composite": "npx tsx scripts/object-composite-sample.ts",
+    "generative-expand": "npx tsx scripts/generative-expand-sample.ts",
+    "generative-fill": "npx tsx scripts/generative-fill-sample.ts",
+    "video-generation": "npx tsx scripts/video-generation-sample.ts",
+    "upload-image": "npx tsx scripts/upload-image-sample.ts",
+    "custom-models": "npx tsx scripts/custom-models-sample.ts"
+  },
+  "dependencies": {
+    "@musallam/firefly-services-clients": "file:..",
+    "dotenv": "^17.2.3"
+  }
+}
