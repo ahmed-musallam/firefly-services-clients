@@ -1,3 +1,9 @@
+## [2.2.1](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.2.0...v2.2.1) (2025-10-26)
+
+### Bug Fixes
+
+- **ims:** implement getAccessToken in TokenIMSClient ([aa2bfcf](https://github.com/ahmed-musallam/firefly-services-clients/commit/aa2bfcf30719cdb9e21617269bcf6275f5fcb5b1))
+
 # [2.2.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.1.0...v2.2.0) (2025-10-26)
 
 ### Features
