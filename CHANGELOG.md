@@ -1,3 +1,9 @@
+# [2.1.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.0.0...v2.1.0) (2025-10-26)
+
+### Features
+
+- deploy to github pages ([144ad6c](https://github.com/ahmed-musallam/firefly-services-clients/commit/144ad6c9789293d1e3194214984ecaf3f443261a))
+
 # [2.0.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v1.1.0...v2.0.0) (2025-10-25)
 
 - feat!: client v2 using axios, polling and full samples ([48863ab](https://github.com/ahmed-musallam/firefly-services-clients/commit/48863abf443dd4b1b5b1d3ee4442ed9551d09c26))
