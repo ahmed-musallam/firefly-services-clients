@@ -21,6 +21,7 @@
     "orval": "orval",
     "build": "vite build",
     "dev": "vite build --watch",
+    "docs": "typedoc",
     "type-check": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",

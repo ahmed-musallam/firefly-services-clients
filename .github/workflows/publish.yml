@@ -57,6 +57,14 @@ jobs:
           test -f dist/index.cjs
           test -f dist/index.d.ts
 
+      - name: Build docs
+        run: npm run docs
+
+      - name: Upload docs for GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: typedoc/
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,3 +75,19 @@ jobs:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
         run: npx semantic-release
+
+  deploy-gh-pages:
+    name: Deploy GitHub Pages
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

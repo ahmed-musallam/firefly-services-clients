@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+  "extends": ["@microsoft/api-extractor/extends/tsdoc-base.json"],
+  "tagDefinitions": [
+    {
+      "tagName": "@default",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@summary",
+      "syntaxKind": "block",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@minimum",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@maximum",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@minLength",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@maxLength",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@minItems",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    },
+    {
+      "tagName": "@maxItems",
+      "syntaxKind": "modifier",
+      "allowMultiple": false
+    }
+  ],
+  "supportForTags": {
+    "@default": true,
+    "@summary": true,
+    "@minimum": true,
+    "@maximum": true,
+    "@minLength": true,
+    "@maxLength": true,
+    "@minItems": true,
+    "@maxItems": true
+  }
+}
