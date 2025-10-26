@@ -41,6 +41,10 @@ export class IMSClient implements IIMSClient {
     return this.cachedToken;
   }
 
+  getClientId(): string {
+    return this.clientId;
+  }
+
   /**
    * Fetch a new access token from IMS.
    */

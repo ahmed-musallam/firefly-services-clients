@@ -3,6 +3,7 @@
  */
 export interface IIMSClient {
   getAccessToken(): Promise<string>;
+  getClientId(): string;
   getAuthHeaders(): Promise<Record<string, string>>;
 }
 

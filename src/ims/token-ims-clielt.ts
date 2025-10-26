@@ -16,6 +16,9 @@ export class TokenIMSClient implements IIMSClient {
   getAccessToken(): Promise<string> {
     throw new Error('Method not implemented.');
   }
+  getClientId(): string {
+    return this.clientId;
+  }
   /**
    * Get headers for authenticated Firefly API requests.
    */
