@@ -1,3 +1,9 @@
+# [2.3.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.2.1...v2.3.0) (2025-10-26)
+
+### Features
+
+- **axios:** allow configuring the client axios instance! ([1e76a0f](https://github.com/ahmed-musallam/firefly-services-clients/commit/1e76a0f9b9b55cf5d9f4bd985a596090cad7833b))
+
 ## [2.2.1](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.2.0...v2.2.1) (2025-10-26)
 
 ### Bug Fixes
