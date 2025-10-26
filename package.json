@@ -1,6 +1,6 @@
 {
   "name": "@musallam/firefly-services-clients",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "TypeScript client library for Adobe Firefly Services API",
   "type": "module",
   "types": "./dist/index.d.ts",

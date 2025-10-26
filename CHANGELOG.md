@@ -1,3 +1,9 @@
+# [2.2.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.1.0...v2.2.0) (2025-10-26)
+
+### Features
+
+- **ims:** expose getClientId for easy extending ([c74df25](https://github.com/ahmed-musallam/firefly-services-clients/commit/c74df25123966ffb55cfa389a7ec1fbcb0649ff9))
+
 # [2.1.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.0.0...v2.1.0) (2025-10-26)
 
 ### Features
