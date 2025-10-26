@@ -23,7 +23,7 @@ export const getCustomModels = (
   options?: SecondParameter<typeof customAxiosInstance<CustomModelsFF3pInfo>>
 ) => {
   return customAxiosInstance<CustomModelsFF3pInfo>(
-    { url: `https://firefly-api.adobe.io/v3/custom-models`, method: 'GET', params },
+    { url: `/v3/custom-models`, method: 'GET', params },
     options
   );
 };

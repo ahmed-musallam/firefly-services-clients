@@ -32,7 +32,7 @@ export const generateSimilarImagesV3Async = (
 ) => {
   return customAxiosInstance<AsyncAcceptResponseV3>(
     {
-      url: `https://firefly-api.adobe.io/v3/images/generate-similar-async`,
+      url: `/v3/images/generate-similar-async`,
       method: 'POST',
       data: generateSimilarImagesV3AsyncBody,
     },
@@ -49,7 +49,7 @@ export const jobResultV3 = (
   options?: SecondParameter<typeof customAxiosInstance<JobResultV3200>>
 ) => {
   return customAxiosInstance<JobResultV3200>(
-    { url: `https://firefly-api.adobe.io/v3/status/${jobId}`, method: 'GET' },
+    { url: `/v3/status/${jobId}`, method: 'GET' },
     options
   );
 };
@@ -62,10 +62,7 @@ export const cancelJobV3 = (
   { jobId }: CancelJobV3PathParameters,
   options?: SecondParameter<typeof customAxiosInstance<unknown>>
 ) => {
-  return customAxiosInstance<unknown>(
-    { url: `https://firefly-api.adobe.io/v3/cancel/${jobId}`, method: 'PUT' },
-    options
-  );
+  return customAxiosInstance<unknown>({ url: `/v3/cancel/${jobId}`, method: 'PUT' }, options);
 };
 
 export type GenerateSimilarImagesV3AsyncResult = NonNullable<

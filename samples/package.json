@@ -12,7 +12,8 @@
     "generative-fill": "npx tsx scripts/generative-fill-sample.ts",
     "video-generation": "npx tsx scripts/video-generation-sample.ts",
     "upload-image": "npx tsx scripts/upload-image-sample.ts",
-    "custom-models": "npx tsx scripts/custom-models-sample.ts"
+    "custom-models": "npx tsx scripts/custom-models-sample.ts",
+    "axios-instance": "npx tsx scripts/axios-instance-sample.ts"
   },
   "dependencies": {
     "@musallam/firefly-services-clients": "file:..",

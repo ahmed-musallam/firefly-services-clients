@@ -29,11 +29,7 @@ export const fillImagesV3Async = (
   options?: SecondParameter<typeof customAxiosInstance<AsyncAcceptResponseV3>>
 ) => {
   return customAxiosInstance<AsyncAcceptResponseV3>(
-    {
-      url: `https://firefly-api.adobe.io/v3/images/fill-async`,
-      method: 'POST',
-      data: fillImagesV3AsyncBody,
-    },
+    { url: `/v3/images/fill-async`, method: 'POST', data: fillImagesV3AsyncBody },
     options
   );
 };
@@ -46,7 +42,7 @@ export const jobResultV3 = (
   options?: SecondParameter<typeof customAxiosInstance<JobResultV3200>>
 ) => {
   return customAxiosInstance<JobResultV3200>(
-    { url: `https://firefly-api.adobe.io/v3/status/${jobId}`, method: 'GET' },
+    { url: `/v3/status/${jobId}`, method: 'GET' },
     options
   );
 };
@@ -58,10 +54,7 @@ export const cancelJobV3 = (
   { jobId }: CancelJobV3PathParameters,
   options?: SecondParameter<typeof customAxiosInstance<unknown>>
 ) => {
-  return customAxiosInstance<unknown>(
-    { url: `https://firefly-api.adobe.io/v3/cancel/${jobId}`, method: 'PUT' },
-    options
-  );
+  return customAxiosInstance<unknown>({ url: `/v3/cancel/${jobId}`, method: 'PUT' }, options);
 };
 
 export type FillImagesV3AsyncResult = NonNullable<Awaited<ReturnType<typeof fillImagesV3Async>>>;

@@ -21,7 +21,7 @@ export const storageImageV2 = (
 ) => {
   return customAxiosInstance<StorageImageResponse>(
     {
-      url: `https://firefly-api.adobe.io/v2/storage/image`,
+      url: `/v2/storage/image`,
       method: 'POST',
       headers: { 'Content-Type': 'image/jpeg' },
       data: storageImageV2Body,

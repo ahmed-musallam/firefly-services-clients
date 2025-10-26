@@ -1,6 +1,7 @@
 import Axios, { type AxiosRequestConfig } from 'axios';
 
 export const AXIOS_INSTANCE = Axios.create();
+AXIOS_INSTANCE.defaults.baseURL = 'https://firefly-api.adobe.io';
 
 // add a second `options` argument here if you want to pass extra options to each generated query
 export const customAxiosInstance = <T>(

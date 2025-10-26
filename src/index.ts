@@ -32,3 +32,4 @@ export * from './extension/index';
 export { IMSClient } from './ims/default-ims-client';
 export { TokenIMSClient } from './ims/token-ims-clielt';
 export type { IIMSClient, IMSClientOptions } from './ims/ims-client.interface';
+export { AXIOS_INSTANCE } from './mutator/custom-axios-instance';

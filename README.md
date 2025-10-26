@@ -231,6 +231,55 @@ const authHeaders = await tokenClient.getAuthHeaders();
 
 For more details on obtaining credentials, see the [Adobe Firefly Services Authentication Guide](https://developer.adobe.com/firefly-services/docs/guides/authentication/).
 
+## Custom Axios Configuration
+
+All API clients use a shared axios instance internally, which is exported as `AXIOS_INSTANCE`. You can customize this instance to configure global behavior for all API calls, such as timeouts, interceptors, custom headers, or retry logic.
+
+> since this _mutates_ AXIOS_INSTANCE, it would need to be executed before any of the client calls.
+
+```typescript
+import { AXIOS_INSTANCE } from '@musallam/firefly-services-clients';
+
+// Add request interceptor
+AXIOS_INSTANCE.interceptors.request.use((config) => {
+  console.log('Making request to:', config.url);
+  return config;
+});
+
+// Add response interceptor
+AXIOS_INSTANCE.interceptors.response.use(
+  (response) => {
+    console.log('Response received:', response.status);
+    return response;
+  },
+  (error) => {
+    console.error('Request failed:', error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Override base URL (e.g., for proxy or different environment)
+AXIOS_INSTANCE.defaults.baseURL = 'https://your-proxy-server.com';
+
+// Set global timeout
+AXIOS_INSTANCE.defaults.timeout = 30000; // 30 seconds
+
+// Add custom headers for all requests
+AXIOS_INSTANCE.defaults.headers.common['X-Custom-Header'] = 'value';
+```
+
+**Common use cases:**
+
+- Setting global timeouts for all API calls
+- Adding request/response logging
+- Implementing retry logic with interceptors
+- Adding custom headers to all requests
+- Overriding the base URL (for proxies or different environments)
+- Monitoring API performance
+- Handling errors globally
+
+For a complete list of available configuration options and interceptor capabilities, see the [Axios documentation](https://github.com/axios/axios?tab=readme-ov-file).
+
 ## Image Upload
 
 For uploading images to Firefly storage (for use with operations like generate similar, expand, fill), use the `uploadImage` utility:

@@ -39,28 +39,31 @@ Each sample can be run with `tsx` (TypeScript executor):
 
 ```bash
 # Image Generation
-npx tsx samples/image-generation-sample.ts
+npx tsx scripts/image-generation-sample.ts
 
 # Generate Similar Images
-npx tsx samples/generate-similar-sample.ts
+npx tsx scripts/generate-similar-sample.ts
 
 # Object Composite
-npx tsx samples/object-composite-sample.ts
+npx tsx scripts/object-composite-sample.ts
 
 # Generative Expand
-npx tsx samples/generative-expand-sample.ts
+npx tsx scripts/generative-expand-sample.ts
 
 # Generative Fill
-npx tsx samples/generative-fill-sample.ts
+npx tsx scripts/generative-fill-sample.ts
 
 # Video Generation
-npx tsx samples/video-generation-sample.ts
+npx tsx scripts/video-generation-sample.ts
 
 # Upload Image
-npx tsx samples/upload-image-sample.ts
+npx tsx scripts/upload-image-sample.ts
 
 # Custom Models
-npx tsx samples/custom-models-sample.ts
+npx tsx scripts/custom-models-sample.ts
+
+# Axios Instance Configuration
+npx tsx scripts/axios-instance-sample.ts
 ```
 
 ## Sample Structure
@@ -73,6 +76,26 @@ Each sample demonstrates:
 - ✅ Polling for job completion
 - ✅ Error handling
 - ✅ Displaying results
+
+### Special Samples
+
+**Axios Instance Configuration** (`axios-instance-sample.ts`)
+
+This advanced sample demonstrates:
+
+- 🔧 Configuring the shared `AXIOS_INSTANCE` with custom settings
+- 🌐 Overriding the base URL (useful for proxies or different environments)
+- 🔍 Using request interceptors to monitor and verify requests
+- ✅ Testing that requests go to the expected URL
+- 🧹 Proper cleanup of interceptors
+
+This is useful when you need to:
+
+- Route requests through a proxy server
+- Point to different environments (staging, production, etc.)
+- Add logging or monitoring to all API calls
+- Implement custom retry logic
+- Add global headers or authentication
 
 ## Environment Variables
 

@@ -27,7 +27,7 @@ export const generateVideoV3 = (
 ) => {
   return customAxiosInstance<GenerateVideoV3202>(
     {
-      url: `https://firefly-api.adobe.io/v3/videos/generate`,
+      url: `/v3/videos/generate`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: generateVideoRequestV3,
@@ -45,7 +45,7 @@ export const jobResultV3 = (
   options?: SecondParameter<typeof customAxiosInstance<AsyncResponseV3>>
 ) => {
   return customAxiosInstance<AsyncResponseV3>(
-    { url: `https://firefly-api.adobe.io/v3/status/${jobUrnOrId}`, method: 'GET' },
+    { url: `/v3/status/${jobUrnOrId}`, method: 'GET' },
     options
   );
 };
@@ -58,10 +58,7 @@ export const cancelJobV3 = (
   { jobUrnOrId }: CancelJobV3PathParameters,
   options?: SecondParameter<typeof customAxiosInstance<unknown>>
 ) => {
-  return customAxiosInstance<unknown>(
-    { url: `https://firefly-api.adobe.io/v3/cancel/${jobUrnOrId}`, method: 'PUT' },
-    options
-  );
+  return customAxiosInstance<unknown>({ url: `/v3/cancel/${jobUrnOrId}`, method: 'PUT' }, options);
 };
 
 export type GenerateVideoV3Result = NonNullable<Awaited<ReturnType<typeof generateVideoV3>>>;

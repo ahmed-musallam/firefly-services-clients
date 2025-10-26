@@ -7,7 +7,7 @@ const getConfig = (name: string): Config => {
     [clientName]: {
       input: `./src/spec/${name}.json`,
       output: {
-        baseUrl: 'https://firefly-api.adobe.io',
+        baseUrl: '',
         workspace: `./src/generated/${clientName}`,
         target: `${clientName}.ts`, // output file name relative to workspace
         client: 'axios-functions',
