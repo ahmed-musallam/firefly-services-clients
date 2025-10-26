@@ -14,7 +14,7 @@ export class TokenIMSClient implements IIMSClient {
     this.clientId = clientId;
   }
   getAccessToken(): Promise<string> {
-    throw new Error('Method not implemented.');
+    return new Promise((resolve) => resolve(this.accessToken));
   }
   getClientId(): string {
     return this.clientId;
