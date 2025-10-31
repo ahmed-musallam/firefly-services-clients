@@ -1,3 +1,9 @@
+# [2.4.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.3.0...v2.4.0) (2025-10-31)
+
+### Features
+
+- **pollJob:** poll job should use the same Axios instance ([eef18d0](https://github.com/ahmed-musallam/firefly-services-clients/commit/eef18d0f452009a364d9630d1362908f8fababd4))
+
 # [2.3.0](https://github.com/ahmed-musallam/firefly-services-clients/compare/v2.2.1...v2.3.0) (2025-10-26)
 
 ### Features
