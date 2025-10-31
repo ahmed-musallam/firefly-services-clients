@@ -1,3 +1,6 @@
+import { AXIOS_INSTANCE } from '../mutator/custom-axios-instance';
+import type { AxiosRequestConfig } from 'axios';
+
 /**
  * Polling utilities for async Firefly jobs
  */
@@ -6,7 +9,7 @@ export interface PollOptions<TResult = unknown> {
   /**
    * Authentication and other fetch options
    */
-  fetchOptions?: RequestInit;
+  axiosRequestConfig?: AxiosRequestConfig;
   /**
    * Interval between polling attempts in milliseconds
    * @default 2000
@@ -75,7 +78,13 @@ export async function pollJob<TResult>(
   options: PollOptions<TResult> = {}
 ): Promise<TResult> {
   const { statusUrl } = jobResult;
-  const { fetchOptions = {}, intervalMs = 2000, maxAttempts = 60, onProgress, timeoutMs } = options;
+  const {
+    axiosRequestConfig = {},
+    intervalMs = 2000,
+    maxAttempts = 60,
+    onProgress,
+    timeoutMs,
+  } = options;
 
   const startTime = Date.now();
   const effectiveTimeout = timeoutMs ?? maxAttempts * intervalMs;
@@ -91,13 +100,9 @@ export async function pollJob<TResult>(
     }
 
     try {
-      const response = await fetch(statusUrl, fetchOptions);
+      const response = await AXIOS_INSTANCE.get<JobStatus<TResult>>(statusUrl, axiosRequestConfig);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const status = (await response.json()) as JobStatus<TResult>;
+      const status = response.data;
 
       // Call progress callback if provided
       if (onProgress) {
