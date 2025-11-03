@@ -68,7 +68,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          npx nx release --skip-publish
+          npx nx release version --first-release
           npx nx release publish
 
   deploy-gh-pages:
