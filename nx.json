@@ -111,6 +111,7 @@
       },
       "git": {
         "commit": true,
+        "push": true,
         "commitMessage": "chore(release): update changelogs [skip ci]"
       }
     },
@@ -123,6 +124,7 @@
       "git": {
         "commit": true,
         "tag": true,
+        "push": true,
         "commitMessage": "chore(release): publish {version}",
         "tagMessage": "v{version}"
       }
