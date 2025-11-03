@@ -7,9 +7,9 @@ import 'dotenv/config';
 import {
   IMSClient,
   GenerateSimilarClient,
-  pollJob,
   UploadImageClient,
-} from '@musallam/firefly-services-clients';
+  pollGenerateSimilarJob,
+} from '@musallam/firefly-client';
 import { readFileSync } from 'fs';
 
 async function main() {
@@ -60,8 +60,8 @@ async function main() {
 
   // 3. Poll for completion
   console.log('\n⏳ Waiting for generation to complete...');
-  const result = await pollJob<GenerateSimilarClient.GenerateSimilarImagesResponseV3>(job, {
-    fetchOptions: { headers: authHeaders },
+  const result = await pollGenerateSimilarJob(job, {
+    axiosRequestConfig: { headers: authHeaders },
     intervalMs: 3000,
     onProgress: (status) => {
       console.log(`  Status: ${status.status}${status.progress ? ` (${status.progress}%)` : ''}`);

@@ -8,9 +8,9 @@ import { readFileSync } from 'fs';
 import {
   GenerativeExpandClient,
   UploadImageClient,
-  pollJob,
+  pollGenerateExpandJob,
   IMSClient,
-} from '@musallam/firefly-services-clients';
+} from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -66,8 +66,8 @@ async function main() {
 
   // 4. Poll for completion
   console.log('\n⏳ Waiting for expansion to complete...');
-  const result = await pollJob<GenerativeExpandClient.ExpandImageResponseV3>(job, {
-    fetchOptions: { headers: authHeaders },
+  const result = await pollGenerateExpandJob(job, {
+    axiosRequestConfig: { headers: authHeaders },
     intervalMs: 3000,
     onProgress: (status) => {
       console.log(`  Status: ${status.status}${status.progress ? ` (${status.progress}%)` : ''}`);

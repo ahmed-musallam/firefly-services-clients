@@ -1,0 +1,75 @@
+{
+  "name": "@musallam/photoshop-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/photoshop-client/src",
+  "projectType": "library",
+  "targets": {
+    "codegen": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/spec/**/*.json",
+        "{projectRoot}/orval.config.ts",
+        "{workspaceRoot}/orval.config.base.ts"
+      ],
+      "outputs": ["{projectRoot}/src/generated"],
+      "options": {
+        "command": "orval --config orval.config.ts",
+        "cwd": "packages/photoshop-client"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "command": "vite build",
+        "cwd": "packages/photoshop-client"
+      },
+      "dependsOn": [
+        "codegen",
+        {
+          "target": "build",
+          "projects": ["@musallam/ims-client"]
+        }
+      ]
+    },
+    "type-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "packages/photoshop-client"
+      }
+    },
+    "docs": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/typedoc/photoshop-client"],
+      "options": {
+        "command": "typedoc --tsconfig tsconfig.json --out ../../typedoc/photoshop-client src/index.ts",
+        "cwd": "packages/photoshop-client"
+      },
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint src --ignore-pattern 'src/generated' --max-warnings 0",
+        "cwd": "packages/photoshop-client"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write \"src/**/*.{ts,json,md}\"",
+        "cwd": "packages/photoshop-client"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --check \"src/**/*.{ts,json,md}\"",
+        "cwd": "packages/photoshop-client"
+      }
+    }
+  },
+  "tags": ["type:library", "scope:photoshop"]
+}

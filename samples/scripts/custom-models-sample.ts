@@ -4,8 +4,8 @@
  */
 
 import 'dotenv/config';
-import { IMSClient } from '@musallam/firefly-services-clients';
-import { CustomModelsClient } from '../../src/index';
+import { IMSClient } from '@musallam/firefly-client';
+import { CustomModelsClient } from '../../packages/firefly-client/src/index';
 
 async function main() {
   // 1. Setup IMS Client for authentication

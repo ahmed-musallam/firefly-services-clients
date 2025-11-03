@@ -5,7 +5,7 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'fs';
-import { UploadImageClient, IMSClient } from '@musallam/firefly-services-clients';
+import { UploadImageClient, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication

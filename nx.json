@@ -1,0 +1,127 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "extends": "nx/presets/npm.json",
+  "affected": {
+    "defaultBase": "main"
+  },
+  "tui": {
+    "enabled": false
+  },
+  "targetDefaults": {
+    "codegen": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/spec/**/*.json",
+        "{projectRoot}/orval.config.ts",
+        "{workspaceRoot}/orval.config.base.ts"
+      ],
+      "outputs": ["{projectRoot}/src/generated"]
+    },
+    "build": {
+      "dependsOn": ["^build", "codegen"],
+      "inputs": ["production", "^production"],
+      "cache": true,
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "docs": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/typedoc.json",
+        "{workspaceRoot}/tsdoc.json"
+      ],
+      "outputs": ["{workspaceRoot}/typedoc/{projectName}"]
+    },
+    "type-check": {
+      "cache": true,
+      "inputs": ["production", "^production"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/eslint.config.mjs", "{workspaceRoot}/.eslintignore"],
+      "outputs": []
+    },
+    "format": {
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.prettierrc", "{workspaceRoot}/.prettierignore"],
+      "outputs": []
+    },
+    "format:check": {
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.prettierrc", "{workspaceRoot}/.prettierignore"],
+      "outputs": []
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    }
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/spec/**/*.json"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/vite.config.base.ts",
+      "{workspaceRoot}/tsconfig.json",
+      "{workspaceRoot}/orval.config.base.ts"
+    ]
+  },
+  "generators": {
+    "@nx/js:library": {
+      "buildable": true,
+      "bundler": "vite"
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": [
+          "build",
+          "type-check",
+          "lint",
+          "format",
+          "format:check",
+          "test",
+          "docs"
+        ]
+      }
+    }
+  },
+  "parallel": 3,
+  "cacheDirectory": ".nx/cache",
+  "release": {
+    "projects": ["packages/*"],
+    "projectsRelationship": "independent",
+    "changelog": {
+      "workspaceChangelog": false,
+      "projectChangelogs": {
+        "createRelease": "github",
+        "file": "{projectRoot}/CHANGELOG.md",
+        "entryWhenNoChanges": false,
+        "renderOptions": {
+          "authors": false
+        }
+      }
+    },
+    "version": {
+      "conventionalCommits": true,
+      "generatorOptions": {
+        "packageRoot": "{projectRoot}",
+        "currentVersionResolver": "disk"
+      }
+    },
+    "git": {
+      "commit": true,
+      "tag": true,
+      "commitMessage": "chore(release): publish {version}",
+      "tagMessage": "v{version}"
+    }
+  }
+}

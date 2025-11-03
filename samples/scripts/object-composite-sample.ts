@@ -6,10 +6,10 @@
 import 'dotenv/config';
 import {
   GenerateObjectCompositeClient,
-  pollJob,
+  pollGenerateObjectCompositeJob,
   UploadImageClient,
   IMSClient,
-} from '@musallam/firefly-services-clients';
+} from '@musallam/firefly-client';
 import { readFileSync } from 'fs';
 
 async function main() {
@@ -66,16 +66,13 @@ async function main() {
 
   // 3. Poll for completion
   console.log('\n⏳ Waiting for generation to complete...');
-  const result = await pollJob<GenerateObjectCompositeClient.GenerateObjectCompositeResponseV3>(
-    job,
-    {
-      fetchOptions: { headers: authHeaders },
-      intervalMs: 3000,
-      onProgress: (status) => {
-        console.log(`  Status: ${status.status}${status.progress ? ` (${status.progress}%)` : ''}`);
-      },
-    }
-  );
+  const result = await pollGenerateObjectCompositeJob(job, {
+    axiosRequestConfig: { headers: authHeaders },
+    intervalMs: 3000,
+    onProgress: (status) => {
+      console.log(`  Status: ${status.status}${status.progress ? ` (${status.progress}%)` : ''}`);
+    },
+  });
 
   // 4. Display results
   console.log('\n✅ Generation complete!');

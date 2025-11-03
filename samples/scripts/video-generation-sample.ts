@@ -4,7 +4,7 @@
  */
 
 import 'dotenv/config';
-import { GenerateVideoClient, pollJob, IMSClient } from '@musallam/firefly-services-clients';
+import { GenerateVideoClient, pollFireflyJob, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -35,8 +35,8 @@ async function main() {
 
   // 3. Poll for completion (with longer timeout)
   console.log('\n⏳ Waiting for video generation to complete...');
-  const result = await pollJob<GenerateVideoClient.AsyncResult>(job, {
-    fetchOptions: { headers: authHeaders },
+  const result = await pollFireflyJob<GenerateVideoClient.AsyncResult>(job, {
+    axiosRequestConfig: { headers: authHeaders },
     intervalMs: 5000, // Check every 5 seconds
     maxAttempts: 120, // Allow up to 10 minutes
     onProgress: (status) => {

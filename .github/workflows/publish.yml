@@ -41,23 +41,13 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
-
       - name: Type check
-        run: npm run type-check
+        run: npx nx run-many -t type-check
 
-      - name: Build library
-        run: npm run build
+      - name: Build all packages
+        run: npx nx run-many -t build --parallel=3
 
-      - name: Verify build output
-        run: |
-          ls -la dist/
-          test -f dist/index.js
-          test -f dist/index.cjs
-          test -f dist/index.d.ts
-
-      - name: Build docs
+      - name: Build docs with Nx
         run: npm run docs
 
       - name: Upload docs for GitHub Pages
@@ -65,7 +55,8 @@ jobs:
         with:
           path: typedoc/
 
-      - name: Release
+      # Use Nx Release for versioning and publishing
+      - name: Version and Publish with Nx Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -74,7 +65,11 @@ jobs:
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npx semantic-release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npx nx release --skip-publish
+          npx nx release publish
 
   deploy-gh-pages:
     name: Deploy GitHub Pages

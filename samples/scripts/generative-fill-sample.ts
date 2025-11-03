@@ -4,7 +4,7 @@
  */
 
 import 'dotenv/config';
-import { GenerativeFillClient, pollJob, IMSClient } from '@musallam/firefly-services-clients';
+import { GenerativeFillClient, pollGenerateFillJob, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -53,8 +53,8 @@ async function main() {
 
   // 3. Poll for completion
   console.log('\n⏳ Waiting for fill to complete...');
-  const result = await pollJob<GenerativeFillClient.FillImageResponseV3>(job, {
-    fetchOptions: { headers: authHeaders },
+  const result = await pollGenerateFillJob(job, {
+    axiosRequestConfig: { headers: authHeaders },
     intervalMs: 3000,
     onProgress: (status) => {
       console.log(`  Status: ${status.status}${status.progress ? ` (${status.progress}%)` : ''}`);

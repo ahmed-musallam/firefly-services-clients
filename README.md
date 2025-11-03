@@ -1,564 +1,469 @@
-# @musallam/firefly-services-clients
+# Adobe Services Clients Monorepo
 
-TypeScript client library for [Adobe Firefly Services API](https://developer.adobe.com/firefly-services/docs/guides/)
+A comprehensive TypeScript client library monorepo for Adobe Firefly and Photoshop APIs, with full type safety and modern tooling.
 
-> **Auto-generated clients** powered by [Orval](https://orval.dev/) from official Adobe Firefly OpenAPI specifications.
+## 📦 Packages
 
-## Features
+This monorepo contains several packages that can be used independently:
 
-- 🔥 **Full TypeScript support** with complete type definitions
-- 🤖 **Auto-generated clients** from OpenAPI specs using Orval
-- 🎨 **Complete API coverage** for all Firefly operations:
-  - Text to Image generation
-  - Image expansion
-  - Generative fill
-  - Similar image generation
-  - Object composite generation
-  - Video generation
-  - Custom models
-  - Image upload
-- 🏷️ **Namespaced exports** to avoid type conflicts between clients
-- ⚡ **Type-safe job polling** with progress tracking and error handling
-- 🎯 **Full type inference** for polling results and progress callbacks
-- 🔐 **Fetch-based** with flexible authentication
-- 📦 **ESM and CommonJS** support
-- 🚀 **Modern async/await** API
+| Package                                                       | Description                       | npm Package                  |
+| ------------------------------------------------------------- | --------------------------------- | ---------------------------- |
+| **[@musallam/firefly-client](./packages/firefly-client)**     | Adobe Firefly Services API client | `@musallam/firefly-client`   |
+| **[@musallam/photoshop-client](./packages/photoshop-client)** | Adobe Photoshop API client        | `@musallam/photoshop-client` |
+| **[@musallam/ims-client](./packages/ims-client)**             | Adobe IMS authentication client   | `@musallam/ims-client`       |
 
-## Installation
+## 🚀 Quick Start
+
+### Installation
+
+Install the packages you need:
 
 ```bash
-npm install @musallam/firefly-services-clients
+# For Firefly API
+npm install @musallam/firefly-client @musallam/ims-client
+
+# For Photoshop API
+npm install @musallam/photoshop-client @musallam/ims-client
+
+# For both
+npm install @musallam/firefly-client @musallam/photoshop-client @musallam/ims-client
 ```
 
-## Quick Start
+### Basic Usage
 
-> **Note:** All clients are exported under namespaces to avoid type conflicts. See [docs/USAGE_EXAMPLES.md](./docs/USAGE_EXAMPLES.md) for detailed examples.
-
-### Generate Images
+#### Firefly API Example
 
 ```typescript
-import { ImageGenerationClient } from '@musallam/firefly-services-clients';
+import { ImageGenerationClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
+import { IMSClient } from '@musallam/ims-client';
 
-const authOptions = {
-  headers: {
-    Authorization: `Bearer YOUR_ACCESS_TOKEN`,
-    'x-api-key': 'YOUR_CLIENT_ID',
-  },
-};
-
-// Start image generation job
-const job = await ImageGenerationClient.generateImagesV3Async(
-  {
-    prompt: 'A futuristic city at sunset',
-    numVariations: 2,
-    size: { width: 2048, height: 2048 },
-    contentClass: ImageGenerationClient.ContentClassV3.photo,
-  },
-  authOptions
-);
-
-console.log('Job started:', job.jobId);
-console.log('Status URL:', job.statusUrl);
-```
-
-### Poll Until Complete
-
-Use the built-in polling utility to automatically wait for job completion with full type safety:
-
-```typescript
-import { ImageGenerationClient, pollJob } from '@musallam/firefly-services-clients';
-
-// Start the job
-const job = await ImageGenerationClient.generateImagesV3Async(
-  {
-    prompt: 'A futuristic city at sunset',
-    size: { width: 2048, height: 2048 },
-  },
-  authOptions
-);
-
-// Poll until complete with explicit result type for full type safety
-const result = await pollJob<ImageGenerationClient.GenerateImagesResponseV3>(job, {
-  fetchOptions: authOptions,
-  intervalMs: 2000, // Check every 2 seconds
-  onProgress: (status) => {
-    console.log(`Status: ${status.status}, Progress: ${status.progress}%`);
-    if (status.result) {
-      // status.result is properly typed!
-      console.log(`Generated ${status.result.outputs.length} images so far`);
-    }
-  },
-});
-
-// result is typed as GenerateImagesResponseV3
-console.log('Generated images:', result.outputs);
-result.outputs.forEach((output) => {
-  console.log(`Image URL: ${output.image.url}`);
-});
-```
-
-## Available Clients
-
-All clients are exported under their own namespace to prevent type conflicts:
-
-| Client                          | Description                         | Source                                      |
-| ------------------------------- | ----------------------------------- | ------------------------------------------- |
-| `ImageGenerationClient`         | Text-to-image generation            | `image-generation-async-v3-client`          |
-| `GenerateSimilarClient`         | Generate similar image variations   | `generate-similar-async-v3-client`          |
-| `GenerateObjectCompositeClient` | Composite objects into images       | `generate-object-composite-async-v3-client` |
-| `GenerativeExpandClient`        | Expand images with AI               | `generative-expand-async-v3-client`         |
-| `GenerativeFillClient`          | Generative fill/remove objects      | `generative-fill-async-v3-client`           |
-| `GenerateVideoClient`           | Generate videos from images/prompts | `generate-video-api-client`                 |
-| `UploadImageClient`             | Upload images to Firefly storage    | `upload-image-client`                       |
-| `CustomModelsClient`            | List and manage custom models       | `custom-models-listing-client`              |
-
-### Usage Pattern
-
-```typescript
-import {
-  ImageGenerationClient,
-  GenerateSimilarClient,
-  UploadImageClient,
-} from '@musallam/firefly-services-clients';
-
-// Each client has its own types - no conflicts!
-const alignment1: ImageGenerationClient.AlignmentHorizontal = 'center';
-const alignment2: GenerateSimilarClient.AlignmentHorizontal = 'left';
-
-// Use client functions
-const result = await ImageGenerationClient.generateImagesV3Async(request, authOptions);
-```
-
-## Authentication
-
-All Firefly API calls require authentication headers with an access token and API key.
-
-### Built-in IMS Client
-
-This library includes an `IMSClient` that handles OAuth 2.0 Client Credentials flow automatically:
-
-```typescript
-import { IMSClient, ImageGenerationClient } from '@musallam/firefly-services-clients';
-
-// Create IMS client
+// Authenticate
 const imsClient = new IMSClient({
   clientId: 'YOUR_CLIENT_ID',
   clientSecret: 'YOUR_CLIENT_SECRET',
   scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
 });
 
-// Get auth headers (handles token fetching and caching)
 const authHeaders = await imsClient.getAuthHeaders();
 
-// Use with any client
-const job = await ImageGenerationClient.generateImagesV3Async(request, {
-  headers: authHeaders,
-});
-```
-
-**Features:**
-
-- ✅ Automatic token fetching and caching
-- ✅ Token expiration handling with 60s buffer
-- ✅ OAuth 2.0 Client Credentials flow
-- ✅ Returns properly formatted headers (`Authorization`, `x-api-key`)
-
-### Manual Authentication
-
-If you already have an access token, pass it directly:
-
-```typescript
-const authOptions = {
-  headers: {
-    Authorization: `Bearer YOUR_ACCESS_TOKEN`,
-    'x-api-key': 'YOUR_CLIENT_ID',
-  },
-};
-
-const job = await ImageGenerationClient.generateImagesV3Async(request, authOptions);
-```
-
-### Custom IMS Client
-
-You can implement your own authentication strategy by implementing the `IIMSClient` interface:
-
-```typescript
-import { IIMSClient } from '@musallam/firefly-services-clients';
-
-class MyCustomIMSClient implements IIMSClient {
-  async getAccessToken(): Promise<string> {
-    // Your custom token fetching logic
-    // e.g., fetch from cache, service account, etc.
-    return 'your_access_token';
-  }
-
-  async getAuthHeaders(): Promise<Record<string, string>> {
-    const token = await this.getAccessToken();
-    return {
-      Authorization: `Bearer ${token}`,
-      'x-api-key': 'YOUR_CLIENT_ID',
-    };
-  }
-}
-
-// Use your custom client
-const myClient = new MyCustomIMSClient();
-const authHeaders = await myClient.getAuthHeaders();
-```
-
-**Use cases for custom clients:**
-
-- Token caching in Redis or external cache
-- Service account authentication
-- Integration with existing auth systems
-- Custom token refresh logic
-- Multi-tenant authentication
-
-### Token-only IMS Client
-
-For scenarios where you already have a long-lived access token:
-
-```typescript
-import { TokenIMSClient } from '@musallam/firefly-services-clients';
-
-const tokenClient = new TokenIMSClient({
-  accessToken: 'YOUR_EXISTING_TOKEN',
-  clientId: 'YOUR_CLIENT_ID',
-});
-
-const authHeaders = await tokenClient.getAuthHeaders();
-```
-
-For more details on obtaining credentials, see the [Adobe Firefly Services Authentication Guide](https://developer.adobe.com/firefly-services/docs/guides/authentication/).
-
-## Custom Axios Configuration
-
-All API clients use a shared axios instance internally, which is exported as `AXIOS_INSTANCE`. You can customize this instance to configure global behavior for all API calls, such as timeouts, interceptors, custom headers, or retry logic.
-
-> since this _mutates_ AXIOS_INSTANCE, it would need to be executed before any of the client calls.
-
-```typescript
-import { AXIOS_INSTANCE } from '@musallam/firefly-services-clients';
-
-// Add request interceptor
-AXIOS_INSTANCE.interceptors.request.use((config) => {
-  console.log('Making request to:', config.url);
-  return config;
-});
-
-// Add response interceptor
-AXIOS_INSTANCE.interceptors.response.use(
-  (response) => {
-    console.log('Response received:', response.status);
-    return response;
-  },
-  (error) => {
-    console.error('Request failed:', error.message);
-    return Promise.reject(error);
-  }
-);
-
-// Override base URL (e.g., for proxy or different environment)
-AXIOS_INSTANCE.defaults.baseURL = 'https://your-proxy-server.com';
-
-// Set global timeout
-AXIOS_INSTANCE.defaults.timeout = 30000; // 30 seconds
-
-// Add custom headers for all requests
-AXIOS_INSTANCE.defaults.headers.common['X-Custom-Header'] = 'value';
-```
-
-**Common use cases:**
-
-- Setting global timeouts for all API calls
-- Adding request/response logging
-- Implementing retry logic with interceptors
-- Adding custom headers to all requests
-- Overriding the base URL (for proxies or different environments)
-- Monitoring API performance
-- Handling errors globally
-
-For a complete list of available configuration options and interceptor capabilities, see the [Axios documentation](https://github.com/axios/axios?tab=readme-ov-file).
-
-## Image Upload
-
-For uploading images to Firefly storage (for use with operations like generate similar, expand, fill), use the `uploadImage` utility:
-
-```typescript
-import { uploadImage } from '@musallam/firefly-services-clients';
-
-// Read your image file
-const imageBuffer = readFileSync('./my-image.jpg');
-const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
-
-// Upload to Firefly storage
-const uploadResult = await uploadImage(imageBlob, {
-  headers: authHeaders,
-});
-
-const uploadId = uploadResult.images[0].id;
-
-// Use the uploadId in other operations
-const job = await GenerateSimilarClient.generateSimilarImagesV3Async(
+// Generate images
+const job = await ImageGenerationClient.generateImagesV3Async(
   {
-    image: {
-      source: { uploadId },
-    },
-    numVariations: 3,
+    prompt: 'A majestic lion on a cliff at sunset',
+    numVariations: 2,
   },
   { headers: authHeaders }
 );
+
+// Poll for results
+const result = await pollGenerateImagesJob(job, {
+  axiosRequestConfig: { headers: authHeaders },
+});
+
+console.log(
+  'Images:',
+  result.outputs.map((o) => o.image.url)
+);
 ```
 
-**Note:** Use `uploadImage` instead of `UploadImageClient.storageImageV2` as it properly handles binary data uploads. The generated client has a limitation with Blob serialization that this utility addresses.
-
-## Job Polling
-
-All async operations return `{ jobId, statusUrl, cancelUrl }`. Use the polling utilities to wait for completion:
-
-### `pollJob<TResult>(jobResult, options)`
-
-Polls a single job until completion with full TypeScript type safety. Specify the result type explicitly for the best developer experience:
+#### Photoshop API Example
 
 ```typescript
-import { ImageGenerationClient, pollJob } from '@musallam/firefly-services-clients';
+import { PhotoshopClient, pollMaskObjectsJob } from '@musallam/photoshop-client';
+import { IMSClient } from '@musallam/ims-client';
 
-// Recommended: Specify the result type for full type safety
-const result = await pollJob<ImageGenerationClient.GenerateImagesResponseV3>(job, {
-  fetchOptions: authOptions,
-  intervalMs: 2000, // Poll every 2 seconds (default)
-  maxAttempts: 60, // Max 60 attempts (default: 120 seconds)
-  timeoutMs: 300000, // Or set explicit 5-minute timeout
+const imsClient = new IMSClient({
+  clientId: 'YOUR_CLIENT_ID',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
+});
+
+const authHeaders = await imsClient.getAuthHeaders();
+
+// Generate masks
+const job = await PhotoshopClient.maskObjects(
+  {
+    image: {
+      source: {
+        url: 'https://your-bucket.s3.amazonaws.com/image.jpg',
+      },
+    },
+  },
+  { headers: authHeaders }
+);
+
+console.log('Job ID:', job.jobId);
+
+const result = await pollMaskObjectsJob(job, {
+  axiosRequestConfig: { headers: authHeaders },
+  intervalMs: 2000,
+  maxAttempts: 60,
   onProgress: (status) => {
-    console.log(`Status: ${status.status}`);
-    console.log(`Progress: ${status.progress}%`);
-    // status.result is properly typed as GenerateImagesResponseV3 | undefined
-    if (status.result) {
-      console.log(`Generated ${status.result.outputs.length} images`);
+    if (status.status === 'not_started' || status.status === 'running') {
+      console.log(`  Status: ${status.status}${status.status === 'running' ? '...' : ''}`);
     }
   },
 });
-
-// result is typed as GenerateImagesResponseV3
-console.log(`Image URL: ${result.outputs[0].image.url}`);
 ```
 
-**Available Result Types:**
-
-- `ImageGenerationClient.GenerateImagesResponseV3`
-- `GenerativeExpandClient.ExpandImageResponseV3`
-- `GenerativeFillClient.FillImageResponseV3`
-- `GenerateSimilarClient.GenerateSimilarImagesResponseV3`
-- `GenerateObjectCompositeClient.GenerateObjectCompositeResponseV3`
-- `GenerateVideoClient.AsyncResult`
-
-See [docs/TYPE_INFERENCE_GUIDE.md](./docs/TYPE_INFERENCE_GUIDE.md) for detailed examples.
-
-### Polling Multiple Jobs
-
-You can poll multiple jobs in parallel using `Promise.all`:
-
-```typescript
-import { pollJob, ImageGenerationClient } from '@musallam/firefly-services-clients';
-
-const jobs = [job1, job2, job3];
-
-const results = await Promise.all(
-  jobs.map((job) =>
-    pollJob<ImageGenerationClient.GenerateImagesResponseV3>(job, {
-      fetchOptions: authOptions,
-    })
-  )
-);
-
-// results is an array of GenerateImagesResponseV3
-results.forEach((result, index) => {
-  console.log(`Job ${index + 1} generated ${result.outputs.length} images`);
-});
-```
-
-### Error Handling
-
-```typescript
-import {
-  ImageGenerationClient,
-  pollJob,
-  PollingError,
-  PollingTimeoutError,
-} from '@musallam/firefly-services-clients';
-
-try {
-  const result = await pollJob<ImageGenerationClient.GenerateImagesResponseV3>(job, {
-    fetchOptions: authOptions,
-    maxAttempts: 30,
-  });
-  console.log(`Success! Generated ${result.outputs.length} images`);
-} catch (error) {
-  if (error instanceof PollingTimeoutError) {
-    console.error('Job timed out after maximum attempts');
-  } else if (error instanceof PollingError) {
-    console.error('Job failed:', error.message);
-    console.log('Job status:', error.status);
-  }
-}
-```
-
-## Architecture
-
-This package uses **Orval** to auto-generate TypeScript clients from OpenAPI specifications:
+## 🏗️ Monorepo Structure
 
 ```
-build-scripts/
-  ├── fetch-spec.ts          # Downloads OpenAPI specs
-  └── spec-urls.ts           # Configuration for spec URLs
-
-src/
-  ├── spec/                  # OpenAPI spec files (JSON)
-  ├── generated/             # Auto-generated clients (DO NOT EDIT)
-  │   ├── image-generation-async-v3-client/
-  │   ├── generate-similar-async-v3-client/
-  │   └── ...
-  ├── extension/             # Custom extensions
-  │   └── job-polling-extension.ts
-  ├── mutator/               # Custom fetch client
-  └── index.ts               # Main entry (namespaced exports)
-
-orval.config.ts              # Orval configuration
+adobe-services-clients/
+├── packages/
+│   ├── firefly-client/       # Firefly API client
+│   │   ├── src/
+│   │   │   ├── generated/    # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/      # Axios instance customization
+│   │   │   └── index.ts      # Main exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   │
+│   ├── photoshop-client/     # Photoshop API client
+│   │   ├── src/
+│   │   │   ├── generated/    # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/      # Axios instance customization
+│   │   │   └── index.ts      # Main exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   │
+│   └── ims-client/           # IMS authentication
+│       ├── src/
+│       │   └── ims/          # IMS client implementations
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── vite.config.ts
+│
+├── samples/                   # Example usage scripts
+├── spec/                      # OpenAPI specifications
+│   ├── firefly/              # Firefly API specs
+│   └── photoshop/            # Photoshop API specs
+├── build-scripts/            # Build utilities
+├── package.json              # Root workspace config
+└── orval.config.ts           # Code generation config
 ```
 
-### Code Generation Workflow
+## 🛠️ Development
 
-1. **Fetch specs**: Download OpenAPI specs from Adobe
+### Prerequisites
 
-   ```bash
-   npm run fetch-spec
-   ```
-
-2. **Generate clients**: Generate TypeScript clients using Orval
-
-   ```bash
-   npm run orval
-   ```
-
-3. **Build**: Bundle the library
-   ```bash
-   npm run build
-   ```
-
-### Namespaced Exports
-
-To avoid type name conflicts (e.g., multiple clients exporting `AlignmentHorizontal`), all clients are imported and re-exported under namespaces in `src/index.ts`:
-
-```typescript
-// src/index.ts
-import * as ImageGenerationClient from './generated/image-generation-async-v3-client/index.js';
-import * as GenerateSimilarClient from './generated/generate-similar-async-v3-client/index.js';
-
-export {
-  ImageGenerationClient,
-  GenerateSimilarClient,
-  // ...
-};
-```
-
-This allows consumers to use:
-
-```typescript
-const type1: ImageGenerationClient.AlignmentHorizontal = 'center';
-const type2: GenerateSimilarClient.AlignmentHorizontal = 'left';
-// No conflicts!
-```
-
-## More Examples
-
-See [USAGE_EXAMPLES.md](./USAGE_EXAMPLES.md) for comprehensive examples including:
-
-- All client types with usage examples
-- Polling patterns and error handling
-- Batch processing multiple jobs
-- Working with different content types
-
-Also check the [Adobe Firefly Services documentation](https://developer.adobe.com/firefly-services/docs/guides/) for API details and guides.
-
-## Development
+- Node.js 18+
+- npm 9+
 
 ### Setup
 
 ```bash
-# Install dependencies
+# Clone the repository
+git clone https://github.com/ahmed-musallam/adobe-services-clients.git
+cd adobe-services-clients
+
+# Install dependencies (for all workspaces)
 npm install
 
-# Download OpenAPI specs
-npm run fetch-spec
-
-# Generate clients from specs
-npm run orval
+# Build all packages
+npm run build
 ```
 
-### Common Commands
+### ⚡️ Powered by Nx
+
+This monorepo uses [Nx](https://nx.dev) for intelligent build orchestration:
+
+- **Smart Caching**: Only rebuilds what changed
+- **Parallel Execution**: Runs tasks concurrently for speed
+- **Dependency Graph**: Automatic task ordering
+- **Affected Commands**: Build/test only what's impacted by changes
 
 ```bash
-# Type check
+# View dependency graph
+npm run nx:graph
+
+# Build only affected projects
+npm run build:affected
+
+# Reset Nx cache
+npm run nx:reset
+```
+
+See [NX_MIGRATION.md](./NX_MIGRATION.md) for detailed Nx documentation.
+
+### Shared Configuration
+
+The monorepo uses shared configuration files:
+
+- **`vite.config.base.ts`** - Shared Vite build configuration for all packages
+- **`tsconfig.json`** - Base TypeScript configuration
+- **`nx.json`** - Nx configuration including release settings
+
+### Build Commands
+
+```bash
+# Build all packages (with Nx caching)
+npm run build
+
+# Build only affected by changes (Nx)
+npm run build:affected
+
+# Watch mode (rebuild on changes)
+npm run dev
+
+# Type check all packages
 npm run type-check
 
-# Lint
+# Clean build artifacts
+npm run clean
+```
+
+**Note**: Nx automatically caches build outputs. Subsequent builds without changes are instant!
+
+### Code Generation
+
+The clients are auto-generated from OpenAPI specifications using Orval, fully integrated with Nx:
+
+```bash
+# Generate all clients
+npm run codegen
+
+# Generate specific client
+npm run codegen:firefly
+npm run codegen:photoshop
+
+# Fetch latest API specs (from Adobe)
+npm run fetch-spec
+```
+
+**Note**: Code generation runs **automatically** when you build. Nx caches generated code for faster subsequent builds.
+
+See [CODEGEN.md](./CODEGEN.md) for detailed documentation on the code generation process.
+
+### Linting & Formatting
+
+The project uses Nx-integrated linting and formatting for intelligent caching and parallel execution:
+
+```bash
+# Lint all packages
 npm run lint
 
-# Format code
+# Lint only affected packages
+npm run lint:affected
+
+# Format all packages
 npm run format
 
-# Build library
-npm run build
+# Format only affected packages
+npm run format:affected
 
-# Run all checks
-npm run type-check && npm run lint
+# Check formatting
+npm run format:check
+npm run format:check:affected
 ```
 
-### Regenerating Clients
+**Note**: Nx caches lint and format results. Subsequent runs without changes are instant!
 
-When Adobe updates their OpenAPI specs:
+### Running Samples
 
 ```bash
-# 1. Download latest specs
-npm run fetch-spec
+cd samples
 
-# 2. Regenerate clients
-npm run orval
-
-# 3. Verify everything works
-npm run type-check
-npm run build
+# Run individual samples
+npm run image-generation
+npm run photoshop-mask-objects
+npm run upload-image
+# ... see samples/package.json for all available scripts
 ```
 
-### Project Structure
+## 📚 Documentation
 
-- **`src/generated/`** - Auto-generated code (never edit manually)
-- **`src/extension/`** - Custom utilities and extensions
-- **`src/mutator/`** - Custom fetch implementation
-- **`orval.config.ts`** - Orval configuration for code generation
-- **`build-scripts/`** - Scripts for fetching specs and automation
+### API Documentation (TypeDoc)
 
-## Contributing
+Generate comprehensive TypeDoc documentation for all packages:
 
-This project uses:
+```bash
+# Generate all package docs + unified landing page
+npm run docs
 
-- **[Orval](https://orval.dev/)** - OpenAPI to TypeScript code generation
-- **Conventional Commits** for commit messages
-- **ESLint + Prettier** for code quality
-- **Husky** for git hooks
-- **Semantic Release** for automated versioning
+# Generate docs only for affected packages
+npm run docs:affected
+```
 
-### Contributing Guidelines
+The documentation is generated in `typedoc/` with:
 
-1. Never edit files in `src/generated/` directly - they are auto-generated
-2. Use conventional commits format: `feat:`, `fix:`, `docs:`, etc.
-3. Run linter and type-check before committing
-4. Extensions and utilities go in `src/extension/`
+- **Unified Landing Page**: `typedoc/index.html` - Beautiful landing page linking to all packages
+- **Per-Package Docs**: `typedoc/{package-name}/` - Complete API documentation for each package
+- **Nx Caching**: Docs are only regenerated when source files change
 
-## License
+**Live Documentation**: [View on GitHub Pages](https://ahmed-musallam.github.io/adobe-services-clients/)
+
+**Note**: Documentation generation is integrated with Nx, providing intelligent caching and parallel execution. See [Nx Docs Integration](./docs/NX_DOCS_INTEGRATION.md) for details.
+
+### Package-Specific Docs
+
+- [Firefly Client Documentation](./packages/firefly-client/README.md)
+- [Photoshop Client Documentation](./packages/photoshop-client/README.md)
+- [IMS Client Documentation](./packages/ims-client/README.md)
+
+## 🔑 Authentication
+
+All Adobe API clients require authentication using Adobe IMS (Identity Management Services):
+
+```typescript
+import { IMSClient } from '@musallam/ims-client';
+
+const imsClient = new IMSClient({
+  clientId: process.env.ADOBE_CLIENT_ID,
+  clientSecret: process.env.ADOBE_CLIENT_SECRET,
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
+});
+
+// Get formatted headers for API requests
+const authHeaders = await imsClient.getAuthHeaders();
+// Returns: { Authorization: 'Bearer ...', 'x-api-key': '...' }
+```
+
+### Using Your Own Token
+
+If you already have an access token:
+
+```typescript
+import { TokenIMSClient } from '@musallam/ims-client';
+
+const imsClient = new TokenIMSClient({
+  accessToken: 'your-access-token',
+  clientId: 'your-client-id',
+});
+
+const authHeaders = imsClient.getAuthHeaders();
+```
+
+## ⚙️ Custom Axios Configuration
+
+Both Firefly and Photoshop clients export their Axios instances for customization:
+
+```typescript
+import { FIREFLY_AXIOS_INSTANCE } from '@musallam/firefly-client';
+import { PHOTOSHOP_AXIOS_INSTANCE } from '@musallam/photoshop-client';
+
+// Add request interceptors
+FIREFLY_AXIOS_INSTANCE.interceptors.request.use((config) => {
+  console.log('Request:', config.url);
+  return config;
+});
+
+// Configure timeouts
+FIREFLY_AXIOS_INSTANCE.defaults.timeout = 30000;
+
+// Override base URLs (useful for proxies)
+PHOTOSHOP_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-proxy.example.com';
+```
+
+See the [axios-instance-sample.ts](./samples/scripts/axios-instance-sample.ts) for more examples.
+
+## 🧪 Testing
+
+```bash
+npm test
+```
+
+## 📝 License
 
 MIT
 
----
+## 🚀 Release Process
 
-**Built with** [Orval](https://orval.dev/) | **API by** [Adobe Firefly Services](https://developer.adobe.com/firefly-services/)
+This monorepo uses **Nx Release** for automated versioning and publishing. Each package is released independently based on conventional commits.
+
+See [NX_RELEASE.md](./NX_RELEASE.md) for detailed documentation on:
+
+- Commit message format
+- Version management
+- Release workflow
+- Nx Release commands
+- Troubleshooting
+
+### Quick Reference
+
+**Commit Format:**
+
+```bash
+feat(firefly): add new feature    # Minor version bump
+fix(photoshop): fix bug           # Patch version bump
+feat(ims)!: breaking change       # Major version bump
+```
+
+**Release Commands:**
+
+```bash
+# Automated release (CI)
+npm run release                   # Full release (version + publish)
+
+# Manual release steps
+npm run release:version           # Version packages
+npm run release:publish           # Publish to npm
+
+# View release plan
+npm run release -- --dry-run      # See what would be released
+```
+
+**Automated Release:**
+
+- Push commits to `main` branch
+- GitHub Actions automatically versions, tags, and publishes
+- Or trigger "Release" workflow manually in GitHub Actions
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Contribution Guidelines
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Follow conventional commit format
+5. Submit a pull request
+
+## 📞 Support
+
+For issues and questions:
+
+- [GitHub Issues](https://github.com/ahmed-musallam/adobe-services-clients/issues)
+- [Adobe Firefly API Documentation](https://developer.adobe.com/firefly-services/docs/firefly-api/)
+- [Adobe Photoshop API Documentation](https://developer.adobe.com/photoshop/photoshop-api-docs/)
+
+## 🔄 Migrating from v2.x
+
+If you're upgrading from the previous `@musallam/firefly-services-clients` package:
+
+### Before (v2.x)
+
+```typescript
+import {
+  ImageGenerationClient,
+  PhotoshopClient,
+  IMSClient,
+} from '@musallam/firefly-services-clients';
+```
+
+### After (v3.x)
+
+```typescript
+import { ImageGenerationClient } from '@musallam/firefly-client';
+import { PhotoshopClient } from '@musallam/photoshop-client';
+import { IMSClient } from '@musallam/ims-client';
+```
+
+**Key Changes:**
+
+- Packages are now separate and can be installed independently
+- Import paths have changed to use the new package names
+- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE` and `PHOTOSHOP_AXIOS_INSTANCE`
+- All other APIs remain the same
+
+## 🎯 Roadmap
+
+- [ ] Add more Adobe service clients (Lightroom, Substance 3D, etc.)
+- [ ] Add comprehensive test suite
+- [ ] Add rate limiting utilities
+- [ ] Add request caching support
+- [ ] Add more examples and tutorials

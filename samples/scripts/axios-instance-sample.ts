@@ -6,7 +6,7 @@
 
 import 'dotenv/config';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
-import { AXIOS_INSTANCE, ImageGenerationClient } from '@musallam/firefly-services-clients';
+import { FIREFLY_AXIOS_INSTANCE, ImageGenerationClient } from '@musallam/firefly-client';
 
 const PORT = 8765; // Uncommon port for testing
 const EXPECTED_PATH = '/v3/images/generate-async';
@@ -39,9 +39,7 @@ function validateRequest(req: IncomingMessage): ValidationResult {
   };
 }
 
-async function startValidationServer(
-  expectedPrompt: string
-): Promise<{ closeServer: () => Promise<void> }> {
+async function startValidationServer(): Promise<{ closeServer: () => Promise<void> }> {
   return new Promise((resolve, reject) => {
     let serverClosed = false;
 
@@ -60,7 +58,7 @@ async function startValidationServer(
       req.on('end', () => {
         console.log(`   Body: ${body}\n`);
 
-        const validation = validateRequest(req, body, expectedPrompt);
+        const validation = validateRequest(req);
 
         if (validation.success) {
           console.log('✅ Server validation PASSED!');
@@ -138,16 +136,15 @@ async function main() {
   const testPrompt = 'A beautiful sunset over mountains, photorealistic';
 
   // Start the validation server
-  const { closeServer } = await startValidationServer(testPrompt);
+  const { closeServer } = await startValidationServer();
 
   try {
     // Configure AXIOS_INSTANCE to point to local server
     console.log(`🔧 Configuring AXIOS_INSTANCE.defaults.baseURL to http://localhost:${PORT}`);
-    AXIOS_INSTANCE.defaults.baseURL = `http://localhost:${PORT}`;
+    FIREFLY_AXIOS_INSTANCE.defaults.baseURL = `http://localhost:${PORT}`;
 
     // Make the image generation request
     console.log('📤 Sending image generation request...');
-    console.log(`   Prompt: "${testPrompt}"\n`);
 
     const job = await ImageGenerationClient.generateImagesV3Async({
       prompt: testPrompt,
