@@ -42,10 +42,10 @@ jobs:
         run: npm run lint
 
       - name: Type check
-        run: npx nx run-many -t type-check
+        run: npm run type-check
 
       - name: Build all packages
-        run: npx nx run-many -t build --parallel=3
+        run: npx run build
 
       - name: Build docs with Nx
         run: npm run docs

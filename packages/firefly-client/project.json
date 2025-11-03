@@ -38,7 +38,14 @@
       "options": {
         "command": "tsc --noEmit",
         "cwd": "packages/firefly-client"
-      }
+      },
+      "dependsOn": [
+        "codegen",
+        {
+          "target": "build",
+          "projects": ["@musallam/ims-client"]
+        }
+      ]
     },
     "docs": {
       "executor": "nx:run-commands",

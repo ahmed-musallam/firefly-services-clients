@@ -38,7 +38,14 @@
       "options": {
         "command": "tsc --noEmit",
         "cwd": "packages/photoshop-client"
-      }
+      },
+      "dependsOn": [
+        "codegen",
+        {
+          "target": "build",
+          "projects": ["@musallam/ims-client"]
+        }
+      ]
     },
     "docs": {
       "executor": "nx:run-commands",
