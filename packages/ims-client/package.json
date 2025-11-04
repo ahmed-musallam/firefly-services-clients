@@ -1,6 +1,6 @@
 {
   "name": "@musallam/ims-client",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Adobe IMS (Identity Management Services) authentication client",
   "type": "module",
   "types": "./dist/index.d.ts",

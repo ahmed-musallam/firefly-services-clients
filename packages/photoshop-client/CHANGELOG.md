@@ -1,3 +1,13 @@
+## 4.0.3 (2025-11-04)
+
+### 🩹 Fixes
+
+- depend on statusUrl for Ps jobs ([f7d93eb](https://github.com/ahmed-musallam/firefly-services-clients/commit/f7d93eb))
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.0.2
+
 ## 4.0.2 (2025-11-04)
 
 ### 🩹 Fixes
