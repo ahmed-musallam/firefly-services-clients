@@ -78,10 +78,10 @@ export class PollingTimeoutError extends PollingError {
  * ```
  */
 export async function pollPhotoshopJob<TResult>(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<TResult> = {}
 ): Promise<TResult> {
-  const { jobId } = jobResult;
+  const { statusUrl } = jobResult;
   const {
     axiosRequestConfig = {},
     intervalMs = 2000,
@@ -104,12 +104,7 @@ export async function pollPhotoshopJob<TResult>(
     }
 
     try {
-      // Use the getJobStatus endpoint
-      const response = await PHOTOSHOP_AXIOS_INSTANCE.get(
-        `/sensei/status/${jobId}`,
-        axiosRequestConfig
-      );
-
+      const response = await PHOTOSHOP_AXIOS_INSTANCE.get(statusUrl, axiosRequestConfig);
       const status = response.data as PhotoshopJobStatus<TResult>;
 
       // Call progress callback if provided
@@ -152,7 +147,7 @@ export async function pollPhotoshopJob<TResult>(
  * Polls a mask objects job until completion
  */
 export async function pollMaskObjectsJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.MaskObjectsJobApiResponse> = {}
 ): Promise<PhotoshopClient.MaskObjectsJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.MaskObjectsJobApiResponse>(jobResult, options);
@@ -162,7 +157,7 @@ export async function pollMaskObjectsJob(
  * Polls a mask body parts job until completion
  */
 export async function pollMaskBodyPartsJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.MaskBodyPartsJobApiResponse> = {}
 ): Promise<PhotoshopClient.MaskBodyPartsJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.MaskBodyPartsJobApiResponse>(jobResult, options);
@@ -172,7 +167,7 @@ export async function pollMaskBodyPartsJob(
  * Polls a refine mask job until completion
  */
 export async function pollRefineMaskJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.RefineMaskJobApiResponse> = {}
 ): Promise<PhotoshopClient.RefineMaskJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.RefineMaskJobApiResponse>(jobResult, options);
@@ -182,7 +177,7 @@ export async function pollRefineMaskJob(
  * Polls a fill masked areas job until completion
  */
 export async function pollFillMaskedAreasJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.FillMaskedAreasJobApiResponse> = {}
 ): Promise<PhotoshopClient.FillMaskedAreasJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.FillMaskedAreasJobApiResponse>(jobResult, options);
@@ -192,7 +187,7 @@ export async function pollFillMaskedAreasJob(
  * Polls a remove background job until completion
  */
 export async function pollRemoveBackgroundJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.SenseiJobApiResponse> = {}
 ): Promise<PhotoshopClient.SenseiJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.SenseiJobApiResponse>(jobResult, options);
@@ -202,7 +197,7 @@ export async function pollRemoveBackgroundJob(
  * Polls a document manifest job until completion
  */
 export async function pollDocumentManifestJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.ManifestJobApiResponse> = {}
 ): Promise<PhotoshopClient.ManifestJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.ManifestJobApiResponse>(jobResult, options);
@@ -212,7 +207,7 @@ export async function pollDocumentManifestJob(
  * Polls a Photoshop job (document operations like create, modify, rendition, etc.)
  */
 export async function pollPsJob(
-  jobResult: { jobId: string; statusUrl?: string },
+  jobResult: { statusUrl: string },
   options: PollPhotoshopJobOptions<PhotoshopClient.PsJobApiResponse> = {}
 ): Promise<PhotoshopClient.PsJobApiResponse> {
   return pollPhotoshopJob<PhotoshopClient.PsJobApiResponse>(jobResult, options);
