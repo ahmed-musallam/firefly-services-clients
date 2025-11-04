@@ -55,8 +55,8 @@ jobs:
         with:
           path: typedoc/
 
-      # Use Nx Release for versioning and publishing
-      - name: Version and Publish with Nx Release
+      # Use Nx Release for versioning, changelog, and publishing
+      - name: Version, Changelog, and Publish with Nx Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -68,8 +68,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          npx nx release version --first-release
-          npx nx release publish
+          npm run release
 
   deploy-gh-pages:
     name: Deploy GitHub Pages
