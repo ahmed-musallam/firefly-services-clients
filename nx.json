@@ -108,11 +108,6 @@
         "renderOptions": {
           "authors": false
         }
-      },
-      "git": {
-        "commit": true,
-        "push": true,
-        "commitMessage": "chore(release): update changelogs [skip ci]"
       }
     },
     "version": {
@@ -120,14 +115,14 @@
       "generatorOptions": {
         "packageRoot": "{projectRoot}",
         "currentVersionResolver": "disk"
-      },
-      "git": {
-        "commit": true,
-        "tag": true,
-        "push": true,
-        "commitMessage": "chore(release): publish {version}",
-        "tagMessage": "v{version}"
       }
+    },
+    "git": {
+      "commit": true,
+      "tag": true,
+      "push": true,
+      "commitMessage": "chore(release): publish {version}",
+      "tagMessage": "{projectName}@{version}"
     }
   }
 }
