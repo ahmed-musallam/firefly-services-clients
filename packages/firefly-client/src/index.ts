@@ -11,8 +11,7 @@ import * as GenerativeExpandClient from './generated/generative-expand-async-v3-
 import * as GenerativeFillClient from './generated/generative-fill-async-v3-client/index';
 import * as GenerateVideoClient from './generated/generate-video-api-client/index';
 import * as UploadImageClient from './generated/upload-image-client/index';
-// TODO: Fix custom-models-listing-client generation issue
-// import * as CustomModelsClient from './generated/custom-models-listing-client/index';
+import * as CustomModelsClient from './generated/custom-models-listing-client/index';
 
 // Export under namespaces to avoid type conflicts
 export {
@@ -23,7 +22,7 @@ export {
   GenerativeFillClient,
   GenerateVideoClient,
   UploadImageClient,
-  // CustomModelsClient,
+  CustomModelsClient,
 };
 
 // Export the Axios instance for customization
