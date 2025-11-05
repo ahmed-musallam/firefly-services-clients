@@ -1,3 +1,9 @@
+## 4.0.4 (2025-11-05)
+
+### 🩹 Fixes
+
+- include custom models api ([3d85bbc](https://github.com/ahmed-musallam/firefly-services-clients/commit/3d85bbc))
+
 ## 4.0.3 (2025-11-04)
 
 ### 🧱 Updated Dependencies
