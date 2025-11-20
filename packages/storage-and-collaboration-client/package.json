@@ -1,0 +1,42 @@
+{
+  "name": "@musallam/storage-and-collaboration-client",
+  "version": "1.0.0",
+  "description": "TypeScript client library for Adobe Cloud Storage and Collaboration API",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "adobe",
+    "storage",
+    "collaboration",
+    "cloud-storage",
+    "typescript",
+    "sdk",
+    "client"
+  ],
+  "author": "",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@musallam/ims-client": "*",
+    "axios": "^1.12.2"
+  }
+}

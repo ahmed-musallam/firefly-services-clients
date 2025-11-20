@@ -1,0 +1,16 @@
+{
+  "name": "@musallam/storage-and-collaboration-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/storage-and-collaboration-client/src",
+  "projectType": "library",
+  "targets": {
+    "codegen": {},
+    "build": {},
+    "type-check": {},
+    "docs": {},
+    "lint": {},
+    "format": {},
+    "format:check": {}
+  },
+  "tags": ["type:library", "scope:storage"]
+}
