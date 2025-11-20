@@ -1,29 +1,48 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "extends": "nx/presets/npm.json",
-  "affected": {
-    "defaultBase": "main"
-  },
   "tui": {
     "enabled": false
   },
   "targetDefaults": {
     "codegen": {
+      "executor": "nx:run-commands",
       "cache": true,
       "inputs": [
         "{projectRoot}/spec/**/*.json",
         "{projectRoot}/orval.config.ts",
         "{workspaceRoot}/orval.config.base.ts"
       ],
-      "outputs": ["{projectRoot}/src/generated"]
+      "outputs": ["{projectRoot}/src/generated"],
+      "options": {
+        "command": "orval --config orval.config.ts",
+        "cwd": "{projectRoot}"
+      }
     },
     "build": {
-      "dependsOn": ["^build", "codegen"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vite build",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "^build",
+        "codegen",
+        {
+          "target": "build",
+          "projects": ["@musallam/ims-client"]
+        }
+      ],
       "inputs": ["production", "^production"],
       "cache": true,
       "outputs": ["{projectRoot}/dist"]
     },
     "docs": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "typedoc --tsconfig tsconfig.json --out ../../typedoc/{projectName} src/index.ts",
+        "cwd": "{projectRoot}"
+      },
       "dependsOn": ["^build"],
       "cache": true,
       "inputs": [
@@ -35,20 +54,47 @@
       "outputs": ["{workspaceRoot}/typedoc/{projectName}"]
     },
     "type-check": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "codegen",
+        {
+          "target": "build",
+          "projects": ["@musallam/ims-client"]
+        }
+      ],
+      "options": {
+        "command": "tsc --noEmit",
+        "cwd": "{projectRoot}"
+      },
       "cache": true,
       "inputs": ["production", "^production"]
     },
     "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint src --ignore-pattern 'src/generated' --max-warnings 0",
+        "cwd": "{projectRoot}"
+      },
       "cache": true,
       "inputs": ["default", "{workspaceRoot}/eslint.config.mjs", "{workspaceRoot}/.eslintignore"],
       "outputs": []
     },
     "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --write \"src/**/*.{ts,json,md}\"",
+        "cwd": "{projectRoot}"
+      },
       "cache": true,
       "inputs": ["default", "{workspaceRoot}/.prettierrc", "{workspaceRoot}/.prettierignore"],
       "outputs": []
     },
     "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "prettier --check \"src/**/*.{ts,json,md}\"",
+        "cwd": "packages/firefly-client"
+      },
       "cache": true,
       "inputs": ["default", "{workspaceRoot}/.prettierrc", "{workspaceRoot}/.prettierignore"],
       "outputs": []
