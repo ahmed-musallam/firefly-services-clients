@@ -158,10 +158,7 @@
     },
     "version": {
       "conventionalCommits": true,
-      "generatorOptions": {
-        "packageRoot": "{projectRoot}",
-        "currentVersionResolver": "disk"
-      }
+      "fallbackCurrentVersionResolver": "disk"
     },
     "git": {
       "commit": true,
