@@ -4,51 +4,12 @@
   "sourceRoot": "packages/ims-client/src",
   "projectType": "library",
   "targets": {
-    "build": {
-      "executor": "nx:run-commands",
-      "outputs": ["{projectRoot}/dist"],
-      "options": {
-        "command": "vite build",
-        "cwd": "packages/ims-client"
-      }
-    },
-    "type-check": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "tsc --noEmit",
-        "cwd": "packages/ims-client"
-      }
-    },
-    "docs": {
-      "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/typedoc/ims-client"],
-      "options": {
-        "command": "typedoc --tsconfig tsconfig.json --out ../../typedoc/ims-client src/index.ts",
-        "cwd": "packages/ims-client"
-      },
-      "dependsOn": ["build"]
-    },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "eslint src --max-warnings 0",
-        "cwd": "packages/ims-client"
-      }
-    },
-    "format": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "prettier --write \"src/**/*.{ts,json,md}\"",
-        "cwd": "packages/ims-client"
-      }
-    },
-    "format:check": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "prettier --check \"src/**/*.{ts,json,md}\"",
-        "cwd": "packages/ims-client"
-      }
-    }
+    "build": {},
+    "type-check": {},
+    "docs": {},
+    "lint": {},
+    "format": {},
+    "format:check": {}
   },
   "tags": ["type:library", "scope:ims"]
 }

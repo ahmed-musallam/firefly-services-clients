@@ -1,7 +1,7 @@
 {
-  "name": "@musallam/firefly-client",
+  "name": "@musallam/storage-and-collaboration-client",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/firefly-client/src",
+  "sourceRoot": "packages/storage-and-collaboration-client/src",
   "projectType": "library",
   "targets": {
     "codegen": {},
@@ -12,5 +12,5 @@
     "format": {},
     "format:check": {}
   },
-  "tags": ["type:library", "scope:firefly"]
+  "tags": ["type:library", "scope:storage"]
 }

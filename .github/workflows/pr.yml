@@ -38,12 +38,7 @@ jobs:
       - name: Build library
         run: npm run build
 
-      - name: Verify build output
-        run: |
-          ls -la dist/
-          test -f dist/index.js
-          test -f dist/index.cjs
-          test -f dist/index.d.ts
-
       - name: Validate conventional commits
-        uses: wagoid/commitlint-github-action@v5
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: commitlint.config.mjs

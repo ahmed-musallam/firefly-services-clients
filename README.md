@@ -1,16 +1,17 @@
 # Adobe Services Clients Monorepo
 
-A comprehensive TypeScript client library monorepo for Adobe Firefly and Photoshop APIs, with full type safety and modern tooling.
+A comprehensive TypeScript client library monorepo for Adobe Firefly, Photoshop, and Cloud Storage APIs, with full type safety and modern tooling.
 
 ## 📦 Packages
 
 This monorepo contains several packages that can be used independently:
 
-| Package                                                       | Description                       | npm Package                  |
-| ------------------------------------------------------------- | --------------------------------- | ---------------------------- |
-| **[@musallam/firefly-client](./packages/firefly-client)**     | Adobe Firefly Services API client | `@musallam/firefly-client`   |
-| **[@musallam/photoshop-client](./packages/photoshop-client)** | Adobe Photoshop API client        | `@musallam/photoshop-client` |
-| **[@musallam/ims-client](./packages/ims-client)**             | Adobe IMS authentication client   | `@musallam/ims-client`       |
+| Package                                                                                       | Description                                  | npm Package                                  |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------- |
+| **[@musallam/firefly-client](./packages/firefly-client)**                                     | Adobe Firefly Services API client            | `@musallam/firefly-client`                   |
+| **[@musallam/photoshop-client](./packages/photoshop-client)**                                 | Adobe Photoshop API client                   | `@musallam/photoshop-client`                 |
+| **[@musallam/storage-and-collaboration-client](./packages/storage-and-collaboration-client)** | Adobe Cloud Storage and Collaboration client | `@musallam/storage-and-collaboration-client` |
+| **[@musallam/ims-client](./packages/ims-client)**                                             | Adobe IMS authentication client              | `@musallam/ims-client`                       |
 
 ## 🚀 Quick Start
 
@@ -25,8 +26,11 @@ npm install @musallam/firefly-client @musallam/ims-client
 # For Photoshop API
 npm install @musallam/photoshop-client @musallam/ims-client
 
-# For both
-npm install @musallam/firefly-client @musallam/photoshop-client @musallam/ims-client
+# For Storage and Collaboration API
+npm install @musallam/storage-and-collaboration-client @musallam/ims-client
+
+# For all
+npm install @musallam/firefly-client @musallam/photoshop-client @musallam/storage-and-collaboration-client @musallam/ims-client
 ```
 
 ### Basic Usage
@@ -106,32 +110,79 @@ const result = await pollMaskObjectsJob(job, {
 });
 ```
 
+#### Storage and Collaboration API Example
+
+```typescript
+import {
+  StorageAndCollaborationClient,
+  STORAGE_AXIOS_INSTANCE,
+} from '@musallam/storage-and-collaboration-client';
+import { IMSClient } from '@musallam/ims-client';
+
+const imsClient = new IMSClient({
+  clientId: 'YOUR_CLIENT_ID',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: ['openid', 'creative_sdk', 'AdobeID'],
+});
+
+// Setup axios instance with authentication
+STORAGE_AXIOS_INSTANCE.interceptors.request.use(async (config) => {
+  const token = await imsClient.getAccessToken();
+  config.headers.Authorization = `Bearer ${token}`;
+  config.headers['x-api-key'] = 'YOUR_CLIENT_ID';
+  return config;
+});
+
+// List projects
+const projects = await StorageAndCollaborationClient.getProjects({
+  limit: 10,
+  sortBy: '-created',
+});
+
+// Create a new project
+const newProject = await StorageAndCollaborationClient.createProject({
+  name: 'My New Project',
+});
+
+console.log('Created project:', newProject.assetId);
+```
+
 ## 🏗️ Monorepo Structure
 
 ```
 adobe-services-clients/
 ├── packages/
-│   ├── firefly-client/       # Firefly API client
+│   ├── firefly-client/                      # Firefly API client
 │   │   ├── src/
-│   │   │   ├── generated/    # Auto-generated from OpenAPI specs
-│   │   │   ├── mutator/      # Axios instance customization
-│   │   │   └── index.ts      # Main exports
+│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   └── index.ts                     # Main exports
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── vite.config.ts
 │   │
-│   ├── photoshop-client/     # Photoshop API client
+│   ├── photoshop-client/                    # Photoshop API client
 │   │   ├── src/
-│   │   │   ├── generated/    # Auto-generated from OpenAPI specs
-│   │   │   ├── mutator/      # Axios instance customization
-│   │   │   └── index.ts      # Main exports
+│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   └── index.ts                     # Main exports
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── vite.config.ts
 │   │
-│   └── ims-client/           # IMS authentication
+│   ├── storage-and-collaboration-client/    # Storage and Collaboration API client
+│   │   ├── src/
+│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   ├── extension/                   # Job polling utilities
+│   │   │   └── index.ts                     # Main exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   │
+│   └── ims-client/                          # IMS authentication
 │       ├── src/
-│       │   └── ims/          # IMS client implementations
+│       │   └── ims/                         # IMS client implementations
 │       ├── package.json
 │       ├── tsconfig.json
 │       └── vite.config.ts
@@ -301,6 +352,7 @@ The documentation is generated in `typedoc/` with:
 
 - [Firefly Client Documentation](./packages/firefly-client/README.md)
 - [Photoshop Client Documentation](./packages/photoshop-client/README.md)
+- [Storage and Collaboration Client Documentation](./packages/storage-and-collaboration-client/README.md)
 - [IMS Client Documentation](./packages/ims-client/README.md)
 
 ## 🔑 Authentication
@@ -343,6 +395,7 @@ Both Firefly and Photoshop clients export their Axios instances for customizatio
 ```typescript
 import { FIREFLY_AXIOS_INSTANCE } from '@musallam/firefly-client';
 import { PHOTOSHOP_AXIOS_INSTANCE } from '@musallam/photoshop-client';
+import { STORAGE_AXIOS_INSTANCE } from '@musallam/storage-and-collaboration-client';
 
 // Add request interceptors
 FIREFLY_AXIOS_INSTANCE.interceptors.request.use((config) => {
@@ -355,6 +408,7 @@ FIREFLY_AXIOS_INSTANCE.defaults.timeout = 30000;
 
 // Override base URLs (useful for proxies)
 PHOTOSHOP_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-proxy.example.com';
+STORAGE_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-storage-proxy.example.com';
 ```
 
 See the [axios-instance-sample.ts](./samples/scripts/axios-instance-sample.ts) for more examples.
@@ -450,6 +504,7 @@ import {
 ```typescript
 import { ImageGenerationClient } from '@musallam/firefly-client';
 import { PhotoshopClient } from '@musallam/photoshop-client';
+import { StorageAndCollaborationClient } from '@musallam/storage-and-collaboration-client';
 import { IMSClient } from '@musallam/ims-client';
 ```
 
@@ -457,11 +512,12 @@ import { IMSClient } from '@musallam/ims-client';
 
 - Packages are now separate and can be installed independently
 - Import paths have changed to use the new package names
-- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE` and `PHOTOSHOP_AXIOS_INSTANCE`
+- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
 - All other APIs remain the same
 
 ## 🎯 Roadmap
 
+- [x] Adobe Cloud Storage and Collaboration API client
 - [ ] Add more Adobe service clients (Lightroom, Substance 3D, etc.)
 - [ ] Add comprehensive test suite
 - [ ] Add rate limiting utilities
