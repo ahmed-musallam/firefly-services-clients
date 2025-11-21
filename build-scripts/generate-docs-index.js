@@ -257,6 +257,16 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
+            <a href="./@musallam/storage-and-collaboration-client/" class="package-card">
+                <h3>Storage & Collaboration Client <span class="badge">Storage</span></h3>
+                <div class="package-name">@musallam/storage-and-collaboration-client</div>
+                <p>
+                    TypeScript client for Adobe Cloud Storage and Collaboration APIs.
+                    Manage projects, folders, files, permissions, and collaborate on cloud content.
+                </p>
+                <span class="cta">View Documentation</span>
+            </a>
+
             <a href="./ims-client/" class="package-card">
                 <h3>IMS Client <span class="badge">Auth</span></h3>
                 <div class="package-name">@musallam/ims-client</div>
@@ -279,7 +289,7 @@ const html = `<!DOCTYPE html>
                 </li>
                 <li>
                     <strong>Installation:</strong>
-                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/ims-client</code>
+                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/storage-and-collaboration-client @musallam/ims-client</code>
                 </li>
                 <li>
                     <strong>Adobe Firefly API:</strong>
@@ -290,6 +300,12 @@ const html = `<!DOCTYPE html>
                 <li>
                     <strong>Adobe Photoshop API:</strong>
                     <a href="https://developer.adobe.com/photoshop/photoshop-api-docs/" target="_blank" rel="noopener">
+                        Official Documentation
+                    </a>
+                </li>
+                <li>
+                    <strong>Adobe Cloud Storage API:</strong>
+                    <a href="https://developer.adobe.com/apis/storage/" target="_blank" rel="noopener">
                         Official Documentation
                     </a>
                 </li>
