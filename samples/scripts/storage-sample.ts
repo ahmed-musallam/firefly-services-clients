@@ -6,11 +6,11 @@
 import {
   StorageAndCollaborationClient,
   STORAGE_AXIOS_INSTANCE,
-  TokenIMSClient,
+  IMSClient,
 } from '@musallam/storage-and-collaboration-client';
 
 // Configure authentication
-const imsClient = new TokenIMSClient({
+const imsClient = new IMSClient({
   clientId: process.env.ADOBE_CLIENT_ID!,
   clientSecret: process.env.ADOBE_CLIENT_SECRET!,
   scopes: ['openid', 'creative_sdk', 'AdobeID'],
@@ -65,10 +65,12 @@ async function main() {
 
     // Example 5: Get project children
     console.log('5. Listing project children...');
-    const children = await StorageAndCollaborationClient.getProjectChildren({
-      assetId: newProject.assetId,
-      limit: 10,
-    });
+    const children = await StorageAndCollaborationClient.getProjectChildren(
+      {
+        assetId: newProject.assetId,
+      },
+      { limit: 10 }
+    );
     console.log(`Found ${children.children?.length || 0} children in the project\n`);
 
     // Example 6: Get project permissions
