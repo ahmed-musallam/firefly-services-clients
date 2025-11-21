@@ -1,3 +1,17 @@
+# 2.0.0 (2025-11-21)
+
+### 🚀 Features
+
+- Adobe Storage and Collaboration Client ([2fc9473](https://github.com/ahmed-musallam/firefly-services-clients/commit/2fc9473))
+
+### 🩹 Fixes
+
+- use path mapping for type checking ([85a85bb](https://github.com/ahmed-musallam/firefly-services-clients/commit/85a85bb))
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.0.3
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
