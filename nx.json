@@ -147,6 +147,7 @@
     "projectsRelationship": "independent",
     "changelog": {
       "workspaceChangelog": false,
+      "automaticFromRef": true,
       "projectChangelogs": {
         "createRelease": "github",
         "file": "{projectRoot}/CHANGELOG.md",
