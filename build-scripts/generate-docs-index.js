@@ -267,6 +267,16 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
+            <a href="./lightroom-client/" class="package-card">
+                <h3>Lightroom Client <span class="badge">Photo Editing</span></h3>
+                <div class="package-name">@musallam/lightroom-client</div>
+                <p>
+                    TypeScript client for Adobe Lightroom APIs.
+                    Apply presets, XMP settings, auto-tone, auto-straighten, and manual edits to photos programmatically.
+                </p>
+                <span class="cta">View Documentation</span>
+            </a>
+
             <a href="./ims-client/" class="package-card">
                 <h3>IMS Client <span class="badge">Auth</span></h3>
                 <div class="package-name">@musallam/ims-client</div>
@@ -289,7 +299,7 @@ const html = `<!DOCTYPE html>
                 </li>
                 <li>
                     <strong>Installation:</strong>
-                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/storage-and-collaboration-client @musallam/ims-client</code>
+                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/storage-and-collaboration-client @musallam/lightroom-client @musallam/ims-client</code>
                 </li>
                 <li>
                     <strong>Adobe Firefly API:</strong>
@@ -306,6 +316,12 @@ const html = `<!DOCTYPE html>
                 <li>
                     <strong>Adobe Cloud Storage API:</strong>
                     <a href="https://developer.adobe.com/apis/storage/" target="_blank" rel="noopener">
+                        Official Documentation
+                    </a>
+                </li>
+                <li>
+                    <strong>Adobe Lightroom API:</strong>
+                    <a href="https://developer.adobe.com/firefly-services/docs/lightroom/" target="_blank" rel="noopener">
                         Official Documentation
                     </a>
                 </li>

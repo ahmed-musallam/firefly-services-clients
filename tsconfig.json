@@ -32,7 +32,8 @@
       "@musallam/photoshop-client": ["./packages/photoshop-client/src"],
       "@musallam/storage-and-collaboration-client": [
         "./packages/storage-and-collaboration-client/src"
-      ]
+      ],
+      "@musallam/lightroom-client": ["./packages/lightroom-client/src"]
     }
   },
   "include": ["src", "build-scripts/spec-urls.ts"],
