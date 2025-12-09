@@ -1,6 +1,6 @@
 {
   "name": "@musallam/photoshop-client",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "TypeScript client library for Adobe Photoshop API",
   "type": "module",
   "types": "./dist/index.d.ts",
