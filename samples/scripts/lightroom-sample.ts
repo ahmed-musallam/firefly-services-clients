@@ -51,7 +51,7 @@ async function main() {
   console.log(`   Output: ${config.outputImageUrl}`);
 
   try {
-    const job = await LightroomClient.autoTone({
+    const job = await LightroomClient.applyAutoTone({
       inputs: {
         href: config.inputImageUrl,
         storage: 'external',
@@ -60,6 +60,7 @@ async function main() {
         {
           href: config.outputImageUrl,
           storage: 'external',
+          type: 'image/jpeg',
         },
       ],
     });
@@ -74,7 +75,8 @@ async function main() {
       intervalMs: 2000,
       maxAttempts: 60,
       onProgress: (status) => {
-        console.log(`   Status: ${status.status} (${new Date().toLocaleTimeString()})`);
+        const outputStatus = status.outputs?.[0]?.status || 'unknown';
+        console.log(`   Status: ${outputStatus} (${new Date().toLocaleTimeString()})`);
       },
     };
 
@@ -84,14 +86,13 @@ async function main() {
     console.log('\n✅ Job completed successfully!\n');
     console.log('📊 Results:');
     console.log(`   Job ID: ${result.jobId}`);
-    console.log(`   Status: ${result.status}`);
     console.log(`   Created: ${result.created}`);
     console.log(`   Modified: ${result.modified}`);
 
     if (result.outputs && result.outputs.length > 0) {
       console.log('\n🖼️  Output Images:');
       result.outputs.forEach((output, index) => {
-        console.log(`   ${index + 1}. ${output.href}`);
+        console.log(`   ${index + 1}. ${output._links?.self?.href} (${output.status})`);
       });
     }
 
@@ -112,7 +113,7 @@ async function main() {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function applyPresetExample() {
-  const job = await LightroomClient.presets({
+  const job = await LightroomClient.applyPreset({
     inputs: {
       source: {
         href: 'https://your-bucket.s3.amazonaws.com/photo.jpg',
@@ -129,12 +130,13 @@ async function applyPresetExample() {
       {
         href: 'https://your-bucket.s3.amazonaws.com/result.jpg',
         storage: 'external',
+        type: 'image/jpeg',
       },
     ],
   });
 
   const result = await pollLightroomJob(job);
-  console.log('Preset applied:', result.outputs?.[0]?.href);
+  console.log('Preset applied:', result.outputs?.[0]?._links?.self?.href);
 }
 
 /**
@@ -142,7 +144,7 @@ async function applyPresetExample() {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function autoStraightenExample() {
-  const job = await LightroomClient.autoStraighten({
+  const job = await LightroomClient.autoStraightenImage({
     inputs: {
       href: 'https://your-bucket.s3.amazonaws.com/crooked.jpg',
       storage: 'external',
@@ -151,12 +153,13 @@ async function autoStraightenExample() {
       {
         href: 'https://your-bucket.s3.amazonaws.com/straightened.jpg',
         storage: 'external',
+        type: 'image/jpeg',
       },
     ],
   });
 
   const result = await pollLightroomJob(job);
-  console.log('Image straightened:', result.outputs?.[0]?.href);
+  console.log('Image straightened:', result.outputs?.[0]?._links?.self?.href);
 }
 
 /**
@@ -164,27 +167,27 @@ async function autoStraightenExample() {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function applyXmpExample() {
-  const job = await LightroomClient.xmp({
+  const job = await LightroomClient.applyPresetFromXmpContent({
     inputs: {
       source: {
         href: 'https://your-bucket.s3.amazonaws.com/photo.jpg',
         storage: 'external',
       },
-      xmp: {
-        href: 'https://your-bucket.s3.amazonaws.com/settings.xmp',
-        storage: 'external',
-      },
+    },
+    options: {
+      xmp: '<x:xmpmeta>...</x:xmpmeta>',
     },
     outputs: [
       {
         href: 'https://your-bucket.s3.amazonaws.com/edited.jpg',
         storage: 'external',
+        type: 'image/jpeg',
       },
     ],
   });
 
   const result = await pollLightroomJob(job);
-  console.log('XMP applied:', result.outputs?.[0]?.href);
+  console.log('XMP applied:', result.outputs?.[0]?._links?.self?.href);
 }
 
 /**
@@ -192,27 +195,29 @@ async function applyXmpExample() {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function manualEditExample() {
-  const job = await LightroomClient.edit({
+  const job = await LightroomClient.applyEdits({
     inputs: {
       source: {
         href: 'https://your-bucket.s3.amazonaws.com/photo.jpg',
         storage: 'external',
       },
-      edits: {
-        href: 'https://your-bucket.s3.amazonaws.com/edits.json',
-        storage: 'external',
-      },
+    },
+    options: {
+      Exposure: 0.5,
+      Contrast: 25,
+      Saturation: 10,
     },
     outputs: [
       {
         href: 'https://your-bucket.s3.amazonaws.com/edited.jpg',
         storage: 'external',
+        type: 'image/jpeg',
       },
     ],
   });
 
   const result = await pollLightroomJob(job);
-  console.log('Manual edits applied:', result.outputs?.[0]?.href);
+  console.log('Manual edits applied:', result.outputs?.[0]?._links?.self?.href);
 }
 
 // Run the main example

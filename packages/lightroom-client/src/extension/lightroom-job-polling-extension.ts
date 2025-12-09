@@ -1,5 +1,6 @@
 import { LIGHTROOM_AXIOS_INSTANCE } from '../mutator/custom-lightroom-axios-instance';
 import type { AxiosRequestConfig } from 'axios';
+import type { JobStatusLinkResponse, LrJobApiResponse } from '../generated/lightroom-client';
 
 /**
  * Polling utilities for async Lightroom jobs
@@ -23,32 +24,17 @@ export interface PollLightroomJobOptions {
   /**
    * Callback for progress updates
    */
-  onProgress?: (status: LightroomJobStatus) => void;
+  onProgress?: (status: LrJobApiResponse) => void;
   /**
    * Custom timeout in milliseconds (overrides maxAttempts)
    */
   timeoutMs?: number;
 }
 
-export interface LightroomJobStatus {
-  jobId?: string;
-  status: 'pending' | 'running' | 'succeeded' | 'failed';
-  created?: string;
-  modified?: string;
-  outputs?: Array<{
-    href?: string;
-    storage?: string;
-  }>;
-  error?: {
-    code?: string;
-    message?: string;
-  };
-}
-
 export class PollingError extends Error {
   constructor(
     message: string,
-    public readonly status?: LightroomJobStatus,
+    public readonly status?: LrJobApiResponse,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -57,7 +43,7 @@ export class PollingError extends Error {
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: LightroomJobStatus) {
+  constructor(message: string, status?: LrJobApiResponse) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
@@ -66,7 +52,7 @@ export class PollingTimeoutError extends PollingError {
 /**
  * Polls a Lightroom async job until completion
  *
- * @param jobResult - The job result containing a statusUrl or jobId from the initial async response
+ * @param jobResult - The job result containing a statusUrl from the initial async response
  * @param options - Polling configuration options
  * @returns The final job status when succeeded
  * @throws {PollingTimeoutError} If max attempts or timeout is reached
@@ -74,17 +60,22 @@ export class PollingTimeoutError extends PollingError {
  *
  * @example
  * ```typescript
- * const result = await pollLightroomJob(jobResult, { axiosRequestConfig: { headers } });
+ * const jobResponse = await LightroomClient.autoTone({ inputs, outputs });
+ * const result = await pollLightroomJob(jobResponse, {
+ *   axiosRequestConfig: { headers },
+ *   onProgress: (status) => console.log(`Status: ${status.outputs?.[0]?.status}`)
+ * });
+ * console.log('Output:', result.outputs?.[0]?._links?.self?.href);
  * ```
  */
 export async function pollLightroomJob(
-  jobResult: { _links?: { self?: { href?: string } } },
+  jobResult: JobStatusLinkResponse,
   options: PollLightroomJobOptions = {}
-): Promise<LightroomJobStatus> {
+): Promise<LrJobApiResponse> {
   const statusUrl = jobResult._links?.self?.href;
 
   if (!statusUrl) {
-    throw new PollingError('No status URL found in job result');
+    throw new PollingError('No status URL found in job result (_links.self.href)');
   }
 
   const {
@@ -109,24 +100,35 @@ export async function pollLightroomJob(
     }
 
     try {
-      const response = await LIGHTROOM_AXIOS_INSTANCE.get(statusUrl, axiosRequestConfig);
-      const status = response.data as LightroomJobStatus;
+      const response = await LIGHTROOM_AXIOS_INSTANCE.get<LrJobApiResponse>(
+        statusUrl,
+        axiosRequestConfig
+      );
+      const status = response.data;
 
       // Call progress callback if provided
       if (onProgress) {
         onProgress(status);
       }
 
-      // Check terminal states
-      if (status.status === 'succeeded') {
+      // Check if all outputs are in a terminal state
+      const allOutputs = status.outputs || [];
+      if (allOutputs.length === 0) {
+        // No outputs yet, keep polling
+        await sleep(intervalMs);
+        continue;
+      }
+
+      const allSucceeded = allOutputs.every((output) => output.status === 'succeeded');
+      const anyFailed = allOutputs.some((output) => output.status === 'failed');
+
+      if (allSucceeded) {
         return status;
       }
 
-      if (status.status === 'failed') {
-        throw new PollingError(
-          `Job failed: ${status.error?.code || 'unknown'} - ${status.error?.message || 'No message'}`,
-          status
-        );
+      if (anyFailed) {
+        const failedOutput = allOutputs.find((output) => output.status === 'failed');
+        throw new PollingError(`Job failed: ${failedOutput?.details || 'Unknown error'}`, status);
       }
 
       // Job still running (pending or running), wait before next poll
