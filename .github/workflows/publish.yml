@@ -54,6 +54,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: typedoc/
+          name: github-pages
 
       # Use Nx Release for versioning, changelog, and publishing
       - name: Version, Changelog, and Publish with Nx Release
