@@ -1,3 +1,13 @@
+# 2.0.0 (2025-12-09)
+
+### 🚀 Features
+
+- lightroom client ([e57018b](https://github.com/ahmed-musallam/firefly-services-clients/commit/e57018b))
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.1.0
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
