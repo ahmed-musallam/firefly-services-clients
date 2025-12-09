@@ -1,3 +1,9 @@
+## 2.0.1 (2025-12-09)
+
+### 🩹 Fixes
+
+- use latest latest lightroom api spec ([668d4fc](https://github.com/ahmed-musallam/firefly-services-clients/commit/668d4fc))
+
 # 2.0.0 (2025-12-09)
 
 ### 🚀 Features
