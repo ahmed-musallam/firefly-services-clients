@@ -10,6 +10,7 @@ This monorepo contains several packages that can be used independently:
 | --------------------------------------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------- |
 | **[@musallam/firefly-client](./packages/firefly-client)**                                     | Adobe Firefly Services API client            | `@musallam/firefly-client`                   |
 | **[@musallam/photoshop-client](./packages/photoshop-client)**                                 | Adobe Photoshop API client                   | `@musallam/photoshop-client`                 |
+| **[@musallam/lightroom-client](./packages/lightroom-client)**                                 | Adobe Lightroom API client                   | `@musallam/lightroom-client`                 |
 | **[@musallam/storage-and-collaboration-client](./packages/storage-and-collaboration-client)** | Adobe Cloud Storage and Collaboration client | `@musallam/storage-and-collaboration-client` |
 | **[@musallam/ims-client](./packages/ims-client)**                                             | Adobe IMS authentication client              | `@musallam/ims-client`                       |
 
@@ -26,11 +27,14 @@ npm install @musallam/firefly-client @musallam/ims-client
 # For Photoshop API
 npm install @musallam/photoshop-client @musallam/ims-client
 
+# For Lightroom API
+npm install @musallam/lightroom-client @musallam/ims-client
+
 # For Storage and Collaboration API
 npm install @musallam/storage-and-collaboration-client @musallam/ims-client
 
 # For all
-npm install @musallam/firefly-client @musallam/photoshop-client @musallam/storage-and-collaboration-client @musallam/ims-client
+npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightroom-client @musallam/storage-and-collaboration-client @musallam/ims-client
 ```
 
 ### Basic Usage
@@ -110,6 +114,55 @@ const result = await pollMaskObjectsJob(job, {
 });
 ```
 
+#### Lightroom API Example
+
+```typescript
+import {
+  LightroomClient,
+  LIGHTROOM_AXIOS_INSTANCE,
+  pollLightroomJob,
+} from '@musallam/lightroom-client';
+import { IMSClient } from '@musallam/ims-client';
+
+const imsClient = new IMSClient({
+  clientId: 'YOUR_CLIENT_ID',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
+});
+
+// Setup axios instance with authentication
+LIGHTROOM_AXIOS_INSTANCE.interceptors.request.use(async (config) => {
+  const token = await imsClient.getAccessToken();
+  config.headers.Authorization = `Bearer ${token}`;
+  config.headers['x-api-key'] = 'YOUR_CLIENT_ID';
+  return config;
+});
+
+// Apply auto-tone to an image
+const job = await LightroomClient.applyAutoTone({
+  inputs: {
+    href: 'https://your-bucket.s3.amazonaws.com/photo.jpg',
+    storage: 'external',
+  },
+  outputs: [
+    {
+      href: 'https://your-bucket.s3.amazonaws.com/auto-toned.jpg',
+      storage: 'external',
+      type: 'image/jpeg',
+    },
+  ],
+});
+
+// Poll for completion
+const result = await pollLightroomJob(job, {
+  onProgress: (status) => {
+    console.log(`Status: ${status.outputs?.[0]?.status}`);
+  },
+});
+
+console.log('Output:', result.outputs?.[0]?._links?.self?.href);
+```
+
 #### Storage and Collaboration API Example
 
 ```typescript
@@ -165,6 +218,16 @@ adobe-services-clients/
 │   │   ├── src/
 │   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
 │   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   └── index.ts                     # Main exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   │
+│   ├── lightroom-client/                    # Lightroom API client
+│   │   ├── src/
+│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   ├── extension/                   # Job polling utilities
 │   │   │   └── index.ts                     # Main exports
 │   │   ├── package.json
 │   │   ├── tsconfig.json
@@ -352,6 +415,7 @@ The documentation is generated in `typedoc/` with:
 
 - [Firefly Client Documentation](./packages/firefly-client/README.md)
 - [Photoshop Client Documentation](./packages/photoshop-client/README.md)
+- [Lightroom Client Documentation](./packages/lightroom-client/README.md)
 - [Storage and Collaboration Client Documentation](./packages/storage-and-collaboration-client/README.md)
 - [IMS Client Documentation](./packages/ims-client/README.md)
 
@@ -395,6 +459,7 @@ Both Firefly and Photoshop clients export their Axios instances for customizatio
 ```typescript
 import { FIREFLY_AXIOS_INSTANCE } from '@musallam/firefly-client';
 import { PHOTOSHOP_AXIOS_INSTANCE } from '@musallam/photoshop-client';
+import { LIGHTROOM_AXIOS_INSTANCE } from '@musallam/lightroom-client';
 import { STORAGE_AXIOS_INSTANCE } from '@musallam/storage-and-collaboration-client';
 
 // Add request interceptors
@@ -408,6 +473,7 @@ FIREFLY_AXIOS_INSTANCE.defaults.timeout = 30000;
 
 // Override base URLs (useful for proxies)
 PHOTOSHOP_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-proxy.example.com';
+LIGHTROOM_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-lightroom-proxy.example.com';
 STORAGE_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-storage-proxy.example.com';
 ```
 
@@ -504,6 +570,7 @@ import {
 ```typescript
 import { ImageGenerationClient } from '@musallam/firefly-client';
 import { PhotoshopClient } from '@musallam/photoshop-client';
+import { LightroomClient } from '@musallam/lightroom-client';
 import { StorageAndCollaborationClient } from '@musallam/storage-and-collaboration-client';
 import { IMSClient } from '@musallam/ims-client';
 ```
@@ -512,13 +579,14 @@ import { IMSClient } from '@musallam/ims-client';
 
 - Packages are now separate and can be installed independently
 - Import paths have changed to use the new package names
-- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
+- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, `LIGHTROOM_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
 - All other APIs remain the same
 
 ## 🎯 Roadmap
 
 - [x] Adobe Cloud Storage and Collaboration API client
-- [ ] Add more Adobe service clients (Lightroom, Substance 3D, etc.)
+- [x] Adobe Lightroom API client
+- [ ] Add more Adobe service clients (Substance 3D, etc.)
 - [ ] Add comprehensive test suite
 - [ ] Add rate limiting utilities
 - [ ] Add request caching support
