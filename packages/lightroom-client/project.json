@@ -1,0 +1,16 @@
+{
+  "name": "@musallam/lightroom-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/lightroom-client/src",
+  "projectType": "library",
+  "targets": {
+    "codegen": {},
+    "build": {},
+    "type-check": {},
+    "docs": {},
+    "lint": {},
+    "format": {},
+    "format:check": {}
+  },
+  "tags": ["type:library", "scope:lightroom"]
+}

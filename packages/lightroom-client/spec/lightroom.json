@@ -1,0 +1,1207 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Firefly Lightroom API Reference",
+    "description": "Programmatically apply Lightroom settings and image adjustments to photos using Adobe's cloud-based image processing services",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://image.adobe.io",
+      "description": "Adobe Image Service API endpoint."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Lightroom Services",
+      "description": "Core Lightroom image processing services."
+    }
+  ],
+  "paths": {
+    "/lrService/presets": {
+      "post": {
+        "summary": "Apply Lightroom preset",
+        "description": "Apply a Lightroom preset to an image. This creates an asynchronous job that processes the image with the specified preset settings. Use the Get Status endpoint to monitor job progress and retrieve results.",
+        "operationId": "presets",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPresetsSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSuccessSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse400ErrorSchema"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Trial Limit Exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse402ErrorSchema"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse403ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse404ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "File Overwrite Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse409ErrorSchema"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Asset Link Invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse410ErrorSchema"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/lrService/xmp": {
+      "post": {
+        "summary": "Apply XMP settings",
+        "description": "Apply XMP (Extensible Metadata Platform) settings to an image. XMP allows you to embed metadata and editing instructions directly into image files. This creates an asynchronous job for processing.",
+        "operationId": "xmp",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostXmpSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSuccessSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse400ErrorSchema"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Trial Limit Exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse402ErrorSchema"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse403ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse404ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "File Overwrite Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse409ErrorSchema"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Asset Link Invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse410ErrorSchema"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/lrService/autoStraighten": {
+      "post": {
+        "summary": "Auto-straighten image",
+        "description": "Automatically detect and correct image rotation/alignment issues. Uses Adobe's AI to analyze the image and apply the optimal straightening adjustment. Creates an asynchronous job for processing.",
+        "operationId": "autoStraighten",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAutoStraightenSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSuccessSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse400ErrorSchema"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Trial Limit Exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse402ErrorSchema"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse403ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse404ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "File Overwrite Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse409ErrorSchema"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Asset Link Invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse410ErrorSchema"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/lrService/autoTone": {
+      "post": {
+        "summary": "Auto-adjust image tone",
+        "description": "Automatically adjust exposure, contrast, highlights, shadows, whites, and blacks in an image using Adobe's intelligent tone mapping. Creates an asynchronous job for processing.",
+        "operationId": "autoTone",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAutoToneSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSuccessSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse400ErrorSchema"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Trial Limit Exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse402ErrorSchema"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse403ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse404ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "File Overwrite Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse409ErrorSchema"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Asset Link Invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse410ErrorSchema"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/lrService/edit": {
+      "post": {
+        "summary": "Apply manual image edits",
+        "description": "Apply custom image adjustments including exposure, contrast, color grading, and other Lightroom editing parameters. Provides precise control over image processing parameters. Creates an asynchronous job for processing.",
+        "operationId": "edit",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostImageEditSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSuccessSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse400ErrorSchema"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Trial Limit Exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse402ErrorSchema"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse403ErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse404ErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "File Overwrite Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse409ErrorSchema"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Asset Link Invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse410ErrorSchema"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/lrService/status/{jobId}": {
+      "get": {
+        "summary": "Get job status",
+        "description": "Retrieve the current status and results of an asynchronous image processing job. Returns job progress, completion status, output URLs, and any error information.",
+        "operationId": "acrstatus",
+        "tags": ["Lightroom Services"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token for API authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-api-key",
+            "description": "API key or client ID for authentication.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "description": "Content type header specifying JSON format.",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-gw-ims-org-id",
+            "description": "IMS organization ID required only for receiving job status through Adobe I/O Events.",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "description": "Unique identifier of the job to retrieve status for.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetStatusSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PostPresetsSchema": {
+        "title": "post_presets",
+        "description": "Initiates an asynchronous job to apply a preset on an image.",
+        "type": "object",
+        "required": ["inputs", "outputs"],
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "minProperties": 2,
+            "description": "The input assets for your call.",
+            "required": ["source", "presets"],
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/InputsSchema"
+              },
+              "presets": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/components/schemas/InputsSchema"
+                }
+              }
+            }
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/OutputsSchema"
+          }
+        }
+      },
+      "PostXmpSchema": {
+        "title": "post_xmp",
+        "description": "Initiates an asynchronous job to apply an XMP setting to an image.",
+        "type": "object",
+        "required": ["inputs", "outputs"],
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "minProperties": 2,
+            "description": "The input assets for your call.",
+            "required": ["source", "xmp"],
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/InputsSchema"
+              },
+              "xmp": {
+                "$ref": "#/components/schemas/InputsSchema"
+              }
+            }
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/OutputsSchema"
+          }
+        }
+      },
+      "PostAutoStraightenSchema": {
+        "title": "post_auto_straighten",
+        "description": "Initiates an asynchronous job to auto straighten an image.",
+        "type": "object",
+        "required": ["inputs", "outputs"],
+        "properties": {
+          "inputs": {
+            "$ref": "#/components/schemas/InputsSchema"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/OutputsSchema"
+          }
+        }
+      },
+      "PostAutoToneSchema": {
+        "title": "post_auto_tone",
+        "description": "Initiates an asynchronous job to apply Auto Tone to an image.",
+        "type": "object",
+        "required": ["inputs", "outputs"],
+        "properties": {
+          "inputs": {
+            "$ref": "#/components/schemas/InputsSchema"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/OutputsSchema"
+          }
+        }
+      },
+      "PostImageEditSchema": {
+        "title": "post_image_edit",
+        "description": "Enables programmatic adjustment of values within the Lightroom Edit Panel and applies them to an image.",
+        "type": "object",
+        "required": ["inputs", "outputs"],
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "minProperties": 2,
+            "description": "The input assets for your call.",
+            "required": ["source"],
+            "properties": {
+              "source": {
+                "$ref": "#/components/schemas/InputsSchema"
+              },
+              "edits": {
+                "$ref": "#/components/schemas/InputsSchema"
+              }
+            }
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/OutputsSchema"
+          }
+        }
+      },
+      "GetStatusSchema": {
+        "title": "get_status",
+        "description": "Returns the status of a job.",
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "description": "The job identifier."
+          },
+          "status": {
+            "type": "string",
+            "description": "The current status of the job.",
+            "enum": ["pending", "running", "succeeded", "failed"]
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the job was created."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the job was last modified."
+          },
+          "outputs": {
+            "type": "array",
+            "description": "Output assets when job is completed.",
+            "items": {
+              "$ref": "#/components/schemas/OutputsSchema"
+            }
+          },
+          "error": {
+            "type": "object",
+            "description": "Error details if job failed.",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code."
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponseSuccessSchema": {
+        "title": "api_response",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "_links": {
+            "type": "object",
+            "description": "_links hrefs the client can use to get status of the asynchronous job.",
+            "properties": {
+              "self": {
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "type": "string",
+                    "format": "string",
+                    "description": "The link that client can use to get status of the asynchronous job.",
+                    "example": "https://image.adobe.io/lrService/status/<:jobId>"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse400ErrorSchema": {
+        "title": "api_response_400",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A summary of the error.",
+            "example": "Input Validation Error"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "The error type.",
+            "example": "InputValidationError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "The error code.",
+            "example": "400"
+          },
+          "details": {
+            "type": "object",
+            "description": "Further details of the error.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for the detailed error."
+              },
+              "reason": {
+                "type": "string",
+                "description": "An explanation of the error."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse402ErrorSchema": {
+        "title": "api_response_402",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A summary of the error.",
+            "example": "Trial Limit Exceeded Error"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "The error type.",
+            "example": "TrialLimitExceededError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "The error code."
+          },
+          "details": {
+            "type": "object",
+            "description": "Further details of the error.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for the detailed error."
+              },
+              "reason": {
+                "type": "string",
+                "description": "An explanation of the error."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse403ErrorSchema": {
+        "title": "api_response_403",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A summary of the error.",
+            "example": "Unable to upload asset"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "The error type.",
+            "example": "FileOverwriteError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "The error code."
+          },
+          "details": {
+            "type": "object",
+            "description": "Further details of the error.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for the detailed error.",
+                "example": "Asset Upload Error"
+              },
+              "reason": {
+                "type": "string",
+                "description": "An explanation of the error."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse404ErrorSchema": {
+        "title": "api_response_404",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A summary of the error.",
+            "example": "Unable to upload asset"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "The error type.",
+            "example": "FileOverwriteError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "The error code."
+          },
+          "details": {
+            "type": "object",
+            "description": "Further details of the error.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for the detailed error.",
+                "example": "Asset Upload Error"
+              },
+              "reason": {
+                "type": "string",
+                "description": "An explanation of the error."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse409ErrorSchema": {
+        "title": "api_response_409",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A summary of the error.",
+            "example": "Unable to upload asset"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "The error type.",
+            "example": "FileOverwriteError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "The error code."
+          },
+          "details": {
+            "type": "object",
+            "description": "Further details of the error.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name for the detailed error.",
+                "example": "Asset Upload Error"
+              },
+              "reason": {
+                "type": "string",
+                "description": "An explanation of the error."
+              }
+            }
+          }
+        }
+      },
+      "ApiResponse410ErrorSchema": {
+        "title": "api_response_410",
+        "description": "Provides API response.",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "format": "string",
+            "description": "A short, human-readable summary of the problem.",
+            "example": "Asset Link Invalid"
+          },
+          "type": {
+            "type": "string",
+            "format": "string",
+            "description": "A machine-readable error type.",
+            "example": "FileLinkInvalidError"
+          },
+          "code": {
+            "type": "string",
+            "format": "string",
+            "description": "A machine-readable error code.",
+            "example": "410"
+          },
+          "details": {
+            "type": "object",
+            "description": "Further descriptions of the exact error where details is substituted for a specific issue.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name for the detailed error.",
+                "example": "Asset Download Error"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Details of error reason.",
+                "example": "Unable to download the input href. The link is either invalid or has expired."
+              }
+            }
+          }
+        }
+      },
+      "InputsSchema": {
+        "type": "object",
+        "description": "Input asset definition.",
+        "properties": {
+          "href": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL or pre-signed URL of the input asset."
+          },
+          "storage": {
+            "type": "string",
+            "description": "Storage type for the input asset."
+          }
+        },
+        "required": ["href", "storage"],
+        "example": {
+          "href": "https://SAMPLE-ff-test.s3.amazonaws.com/TEST-asdk/firefly-uploads/EXAMPLE",
+          "storage": "external"
+        }
+      },
+      "OutputsSchema": {
+        "type": "array",
+        "description": "Output asset definition.",
+        "items": {
+          "type": "object",
+          "properties": {
+            "href": {
+              "type": "string",
+              "format": "uri",
+              "description": "Pre-signed URL where the output asset is stored or can be accessed."
+            },
+            "storage": {
+              "type": "string",
+              "description": "Storage type for the output asset."
+            }
+          },
+          "required": ["href", "storage"]
+        },
+        "example": [
+          {
+            "href": "https://SAMPLE-ff-test.s3.amazonaws.com/TEST-asdk/uploads/EXAMPLE",
+            "storage": "external"
+          }
+        ]
+      }
+    }
+  },
+  "security": []
+}
