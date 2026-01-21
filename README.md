@@ -11,6 +11,7 @@ This monorepo contains several packages that can be used independently:
 | **[@musallam/firefly-client](./packages/firefly-client)**                                     | Adobe Firefly Services API client            | `@musallam/firefly-client`                   |
 | **[@musallam/photoshop-client](./packages/photoshop-client)**                                 | Adobe Photoshop API client                   | `@musallam/photoshop-client`                 |
 | **[@musallam/lightroom-client](./packages/lightroom-client)**                                 | Adobe Lightroom API client                   | `@musallam/lightroom-client`                 |
+| **[@musallam/dynamic-graphics-render-client](./packages/dynamic-graphics-render-client)**     | Adobe Dynamic Graphics Render API client     | `@musallam/dynamic-graphics-render-client`   |
 | **[@musallam/storage-and-collaboration-client](./packages/storage-and-collaboration-client)** | Adobe Cloud Storage and Collaboration client | `@musallam/storage-and-collaboration-client` |
 | **[@musallam/ims-client](./packages/ims-client)**                                             | Adobe IMS authentication client              | `@musallam/ims-client`                       |
 
@@ -30,11 +31,14 @@ npm install @musallam/photoshop-client @musallam/ims-client
 # For Lightroom API
 npm install @musallam/lightroom-client @musallam/ims-client
 
+# For Dynamic Graphics Render API
+npm install @musallam/dynamic-graphics-render-client @musallam/ims-client
+
 # For Storage and Collaboration API
 npm install @musallam/storage-and-collaboration-client @musallam/ims-client
 
 # For all
-npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightroom-client @musallam/storage-and-collaboration-client @musallam/ims-client
+npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightroom-client @musallam/dynamic-graphics-render-client @musallam/storage-and-collaboration-client @musallam/ims-client
 ```
 
 ### Basic Usage
@@ -163,6 +167,72 @@ const result = await pollLightroomJob(job, {
 console.log('Output:', result.outputs?.[0]?._links?.self?.href);
 ```
 
+#### Dynamic Graphics Render API Example
+
+```typescript
+import {
+  DynamicGraphicsRenderClient,
+  DYNAMIC_GRAPHICS_AXIOS_INSTANCE,
+  pollDynamicGraphicsJob,
+} from '@musallam/dynamic-graphics-render-client';
+import { IMSClient } from '@musallam/ims-client';
+
+const imsClient = new IMSClient({
+  clientId: 'YOUR_CLIENT_ID',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
+});
+
+// Setup axios instance with authentication
+DYNAMIC_GRAPHICS_AXIOS_INSTANCE.interceptors.request.use(async (config) => {
+  const token = await imsClient.getAccessToken();
+  config.headers.Authorization = `Bearer ${token}`;
+  config.headers['x-api-key'] = 'YOUR_CLIENT_ID';
+  return config;
+});
+
+// Render a Motion Graphics Template
+const renderJob = await DynamicGraphicsRenderClient.templateRender({
+  source: {
+    url: 'https://your-storage.com/templates/template.mogrt',
+  },
+  type: 'mogrt',
+  variations: [
+    {
+      id: 'variation-1',
+      presetIds: ['ffs_video_api_vert_1920p_hq'],
+      elements: [
+        {
+          id: 'element-id',
+          type: 'mogrt',
+          controls: [
+            {
+              id: 'text-control-id',
+              type: 'text',
+              data: {
+                text: 'Custom Title',
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+
+// Poll for completion
+const result = await pollDynamicGraphicsJob(renderJob, {
+  onProgress: (status) => {
+    console.log(`Status: ${status.status}, Progress: ${status.percentCompleted}%`);
+  },
+});
+
+console.log(
+  'Rendered videos:',
+  result.outputs?.map((o) => o.destination.url)
+);
+```
+
 #### Storage and Collaboration API Example
 
 ```typescript
@@ -224,6 +294,16 @@ adobe-services-clients/
 │   │   └── vite.config.ts
 │   │
 │   ├── lightroom-client/                    # Lightroom API client
+│   │   ├── src/
+│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── mutator/                     # Axios instance customization
+│   │   │   ├── extension/                   # Job polling utilities
+│   │   │   └── index.ts                     # Main exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts
+│   │
+│   ├── dynamic-graphics-render-client/      # Dynamic Graphics Render API client
 │   │   ├── src/
 │   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
 │   │   │   ├── mutator/                     # Axios instance customization
@@ -416,6 +496,7 @@ The documentation is generated in `typedoc/` with:
 - [Firefly Client Documentation](./packages/firefly-client/README.md)
 - [Photoshop Client Documentation](./packages/photoshop-client/README.md)
 - [Lightroom Client Documentation](./packages/lightroom-client/README.md)
+- [Dynamic Graphics Render Client Documentation](./packages/dynamic-graphics-render-client/README.md)
 - [Storage and Collaboration Client Documentation](./packages/storage-and-collaboration-client/README.md)
 - [IMS Client Documentation](./packages/ims-client/README.md)
 
@@ -460,6 +541,7 @@ Both Firefly and Photoshop clients export their Axios instances for customizatio
 import { FIREFLY_AXIOS_INSTANCE } from '@musallam/firefly-client';
 import { PHOTOSHOP_AXIOS_INSTANCE } from '@musallam/photoshop-client';
 import { LIGHTROOM_AXIOS_INSTANCE } from '@musallam/lightroom-client';
+import { DYNAMIC_GRAPHICS_AXIOS_INSTANCE } from '@musallam/dynamic-graphics-render-client';
 import { STORAGE_AXIOS_INSTANCE } from '@musallam/storage-and-collaboration-client';
 
 // Add request interceptors
@@ -474,6 +556,8 @@ FIREFLY_AXIOS_INSTANCE.defaults.timeout = 30000;
 // Override base URLs (useful for proxies)
 PHOTOSHOP_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-proxy.example.com';
 LIGHTROOM_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-lightroom-proxy.example.com';
+DYNAMIC_GRAPHICS_AXIOS_INSTANCE.defaults.baseURL =
+  'https://custom-dynamic-graphics-proxy.example.com';
 STORAGE_AXIOS_INSTANCE.defaults.baseURL = 'https://custom-storage-proxy.example.com';
 ```
 
@@ -571,6 +655,7 @@ import {
 import { ImageGenerationClient } from '@musallam/firefly-client';
 import { PhotoshopClient } from '@musallam/photoshop-client';
 import { LightroomClient } from '@musallam/lightroom-client';
+import { DynamicGraphicsRenderClient } from '@musallam/dynamic-graphics-render-client';
 import { StorageAndCollaborationClient } from '@musallam/storage-and-collaboration-client';
 import { IMSClient } from '@musallam/ims-client';
 ```
@@ -579,13 +664,14 @@ import { IMSClient } from '@musallam/ims-client';
 
 - Packages are now separate and can be installed independently
 - Import paths have changed to use the new package names
-- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, `LIGHTROOM_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
+- `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, `LIGHTROOM_AXIOS_INSTANCE`, `DYNAMIC_GRAPHICS_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
 - All other APIs remain the same
 
 ## 🎯 Roadmap
 
 - [x] Adobe Cloud Storage and Collaboration API client
 - [x] Adobe Lightroom API client
+- [x] Adobe Dynamic Graphics Render API client
 - [ ] Add more Adobe service clients (Substance 3D, etc.)
 - [ ] Add comprehensive test suite
 - [ ] Add rate limiting utilities

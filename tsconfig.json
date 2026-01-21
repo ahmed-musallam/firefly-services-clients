@@ -30,10 +30,11 @@
       "@musallam/ims-client": ["./packages/ims-client/src"],
       "@musallam/firefly-client": ["./packages/firefly-client/src"],
       "@musallam/photoshop-client": ["./packages/photoshop-client/src"],
+      "@musallam/lightroom-client": ["./packages/lightroom-client/src"],
+      "@musallam/dynamic-graphics-render-client": ["./packages/dynamic-graphics-render-client/src"],
       "@musallam/storage-and-collaboration-client": [
         "./packages/storage-and-collaboration-client/src"
-      ],
-      "@musallam/lightroom-client": ["./packages/lightroom-client/src"]
+      ]
     }
   },
   "include": ["src", "build-scripts/spec-urls.ts"],
