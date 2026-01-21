@@ -1,3 +1,9 @@
+## 4.2.0 (2026-01-21)
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.2.0
+
 ## 4.1.1 (2025-12-09)
 
 ### 🧱 Updated Dependencies
