@@ -43,7 +43,7 @@ export class PollingError extends Error {
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: LrJobApiResponse) {
+  constructor(message: string, status?: string) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
