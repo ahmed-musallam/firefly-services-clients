@@ -1,3 +1,9 @@
+## 2.0.1 (2026-01-26)
+
+### 🩹 Fixes
+
+- log full errors with full status json ([21dc691](https://github.com/ahmed-musallam/firefly-services-clients/commit/21dc691))
+
 # 2.0.0 (2026-01-21)
 
 ### 🚀 Features
