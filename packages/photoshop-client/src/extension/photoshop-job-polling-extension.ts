@@ -44,7 +44,7 @@ export interface PhotoshopJobStatus<TResult = unknown> {
 export class PollingError extends Error {
   constructor(
     message: string,
-    public readonly status?: PhotoshopJobStatus,
+    public readonly status?: string,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -53,7 +53,7 @@ export class PollingError extends Error {
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: PhotoshopJobStatus) {
+  constructor(message: string, status?: string) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
@@ -121,7 +121,7 @@ export async function pollPhotoshopJob<TResult>(
       if (status.status === 'failed') {
         throw new PollingError(
           `Job failed: ${status.error_code || 'unknown'} - ${status.message || 'No message'}`,
-          status
+          JSON.stringify(status)
         );
       }
 

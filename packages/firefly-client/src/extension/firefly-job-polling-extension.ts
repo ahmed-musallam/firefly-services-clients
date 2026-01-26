@@ -48,7 +48,7 @@ export interface JobStatus<TResult = unknown> {
 export class PollingError extends Error {
   constructor(
     message: string,
-    public readonly status?: JobStatus,
+    public readonly status?: string,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -57,7 +57,7 @@ export class PollingError extends Error {
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: JobStatus) {
+  constructor(message: string, status?: string) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
@@ -126,11 +126,11 @@ export async function pollFireflyJob<TResult>(
       }
 
       if (status.status === 'failed') {
-        throw new PollingError(`Job failed: ${JSON.stringify(status)}`, status);
+        throw new PollingError(`Job failed: ${JSON.stringify(status)}`, JSON.stringify(status));
       }
 
       if (status.status === 'canceled') {
-        throw new PollingError(`Job was canceled`, status);
+        throw new PollingError(`Job was canceled`, JSON.stringify(status));
       }
 
       // Job still running, wait before next poll

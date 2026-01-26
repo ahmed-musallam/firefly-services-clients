@@ -36,18 +36,20 @@ export interface PollDynamicGraphicsJobOptions {
 }
 
 export class PollingError extends Error {
+  public readonly statusJson: string;
   constructor(
     message: string,
-    public readonly status?: JobStatus,
+    public readonly status?: string,
     public readonly cause?: unknown
   ) {
     super(message);
+    this.statusJson = JSON.stringify(status);
     this.name = 'PollingError';
   }
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: JobStatus) {
+  constructor(message: string, status?: string) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
@@ -127,7 +129,7 @@ export async function pollDynamicGraphicsJob(
 
       if (status.status === 'failed') {
         const errorMessage = status.message || 'Unknown error';
-        throw new PollingError(`Job failed: ${errorMessage}`, status);
+        throw new PollingError(`Job failed: ${errorMessage}`, JSON.stringify(status));
       }
 
       // Job still running (not_started or running), wait before next poll

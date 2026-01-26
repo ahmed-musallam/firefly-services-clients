@@ -34,7 +34,7 @@ export interface PollLightroomJobOptions {
 export class PollingError extends Error {
   constructor(
     message: string,
-    public readonly status?: LrJobApiResponse,
+    public readonly status?: string,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -128,7 +128,10 @@ export async function pollLightroomJob(
 
       if (anyFailed) {
         const failedOutput = allOutputs.find((output) => output.status === 'failed');
-        throw new PollingError(`Job failed: ${failedOutput?.details || 'Unknown error'}`, status);
+        throw new PollingError(
+          `Job failed: ${failedOutput?.details || 'Unknown error'}`,
+          JSON.stringify(status)
+        );
       }
 
       // Job still running (pending or running), wait before next poll
