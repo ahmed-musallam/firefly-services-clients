@@ -34,7 +34,7 @@ export interface PollStorageJobOptions {
 export class PollingError extends Error {
   constructor(
     message: string,
-    public readonly status?: StorageAndCollaborationClient.JobStatus,
+    public readonly status?: string,
     public readonly cause?: unknown
   ) {
     super(message);
@@ -43,7 +43,7 @@ export class PollingError extends Error {
 }
 
 export class PollingTimeoutError extends PollingError {
-  constructor(message: string, status?: StorageAndCollaborationClient.JobStatus) {
+  constructor(message: string, status?: string) {
     super(message, status);
     this.name = 'PollingTimeoutError';
   }
@@ -108,7 +108,7 @@ export async function pollStorageJob(
           `Job failed: ${failedStatus.errors?.[0]?.error_code || 'unknown'} - ${
             failedStatus.errors?.[0]?.message || 'No message'
           }`,
-          status
+          JSON.stringify(status)
         );
       }
 
