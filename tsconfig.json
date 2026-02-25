@@ -31,6 +31,7 @@
       "@musallam/firefly-client": ["./packages/firefly-client/src"],
       "@musallam/photoshop-client": ["./packages/photoshop-client/src"],
       "@musallam/lightroom-client": ["./packages/lightroom-client/src"],
+      "@musallam/audio-video-client": ["./packages/audio-video-client/src"],
       "@musallam/dynamic-graphics-render-client": ["./packages/dynamic-graphics-render-client/src"],
       "@musallam/storage-and-collaboration-client": [
         "./packages/storage-and-collaboration-client/src"

@@ -277,12 +277,22 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./dynamic-graphics-render-client/" class="package-card">
-                <h3>Dynamic Graphics Render Client <span class="badge">Video</span></h3>
+            <a href="./audio-video-client/" class="package-card">
+                <h3>Audio and Video Client <span class="badge">Media</span></h3>
+                <div class="package-name">@musallam/audio-video-client</div>
+                <p>
+                    TypeScript client for Adobe Audio and Video APIs.
+                    Render dynamic graphics templates, process audio and video content, and create engaging media programmatically.
+                </p>
+                <span class="cta">View Documentation</span>
+            </a>
+
+            <a href="./dynamic-graphics-render-client/" class="package-card" style="opacity: 0.6;">
+                <h3>Dynamic Graphics Render Client <span class="badge" style="background: #999;">Deprecated</span></h3>
                 <div class="package-name">@musallam/dynamic-graphics-render-client</div>
                 <p>
-                    TypeScript client for Adobe Dynamic Graphics Render APIs.
-                    Inspect and render Motion Graphics Templates (.mogrt) with dynamic content, text, and media.
+                    ⚠️ Deprecated - Use @musallam/audio-video-client instead.
+                    This package is no longer maintained.
                 </p>
                 <span class="cta">View Documentation</span>
             </a>
@@ -309,7 +319,7 @@ const html = `<!DOCTYPE html>
                 </li>
                 <li>
                     <strong>Installation:</strong>
-                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightroom-client @musallam/dynamic-graphics-render-client @musallam/storage-and-collaboration-client @musallam/ims-client</code>
+                    <code>npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightroom-client @musallam/audio-video-client @musallam/storage-and-collaboration-client @musallam/ims-client</code>
                 </li>
                 <li>
                     <strong>Adobe Firefly API:</strong>
@@ -336,8 +346,8 @@ const html = `<!DOCTYPE html>
                     </a>
                 </li>
                 <li>
-                    <strong>Adobe Dynamic Graphics Render API:</strong>
-                    <a href="https://developer.adobe.com/firefly-services/docs/" target="_blank" rel="noopener">
+                    <strong>Adobe Audio and Video API:</strong>
+                    <a href="https://developer.adobe.com/firefly-services/docs/audio-video/" target="_blank" rel="noopener">
                         Official Documentation
                     </a>
                 </li>
