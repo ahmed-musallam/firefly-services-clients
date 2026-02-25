@@ -1,3 +1,13 @@
+# 2.0.0 (2026-02-25)
+
+### 🚀 Features
+
+- video audio API ([d3ca4a6](https://github.com/ahmed-musallam/firefly-services-clients/commit/d3ca4a6))
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.3.0
+
 # Changelog
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
