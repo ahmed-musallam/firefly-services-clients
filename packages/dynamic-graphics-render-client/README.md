@@ -1,5 +1,9 @@
 # @musallam/dynamic-graphics-render-client
 
+> ⚠️ **DEPRECATED**: This package is deprecated in favor of [@musallam/audio-video-client](../audio-video-client). The Audio and Video Client provides all the same functionality plus additional features for audio and video processing. Please migrate to the new package for continued support and updates.
+>
+> **Migration:** Simply replace `@musallam/dynamic-graphics-render-client` with `@musallam/audio-video-client` in your imports. The API is identical.
+
 TypeScript client library for the Adobe Dynamic Graphics Render API (beta). This client provides a type-safe interface for inspecting and rendering Motion Graphics Templates (.mogrt files) with dynamic content.
 
 ## Features

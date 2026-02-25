@@ -1,0 +1,16 @@
+{
+  "name": "@musallam/audio-video-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/audio-video-client/src",
+  "projectType": "library",
+  "targets": {
+    "codegen": {},
+    "build": {},
+    "type-check": {},
+    "docs": {},
+    "lint": {},
+    "format": {},
+    "format:check": {}
+  },
+  "tags": ["type:library", "scope:audio-video"]
+}

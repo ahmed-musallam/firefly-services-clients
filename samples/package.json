@@ -23,6 +23,7 @@
     "@musallam/ims-client": "*",
     "@musallam/storage-and-collaboration-client": "*",
     "@musallam/dynamic-graphics-render-client": "*",
+    "@musallam/audio-video-client": "*",
     "@aws-sdk/client-s3": "^3.712.0",
     "@aws-sdk/s3-request-presigner": "^3.712.0",
     "dotenv": "^17.2.3"
