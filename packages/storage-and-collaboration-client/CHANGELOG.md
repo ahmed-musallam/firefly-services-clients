@@ -1,3 +1,9 @@
+## 2.3.1 (2026-02-26)
+
+### 🚀 Features
+
+- **storage-and-collaboration-client:** update to latest API ([3cf5821](https://github.com/ahmed-musallam/firefly-services-clients/commit/3cf5821))
+
 ## 2.3.0 (2026-02-25)
 
 ### 🧱 Updated Dependencies
