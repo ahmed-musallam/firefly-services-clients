@@ -5,44 +5,74 @@
  * OpenAPI spec version: v1
  */
 import type {
-  AssetPermissionResponseResponse,
-  DiscardProjectPathParameters,
+  CopyFilePathParameters,
+  DeleteFileParams,
+  DeleteFilePathParameters,
+  DeleteFolderParams,
+  DeleteFolderPathParameters,
+  DeleteProjectParams,
+  DeleteProjectPathParameters,
   DownloadFileParams,
   DownloadFilePathParameters,
   FileAsset,
+  FileCopyAcceptedResponseResponse,
+  FileCopyRequestBody,
   FileDownloadAcceptedResponseResponse,
-  FileDownloadUrlResponseResponse,
+  FileDownloadOKResponseResponse,
+  FileMoveAcceptedResponseResponse,
+  FileMoveRequestBody,
+  FilePermissionResponseResponse,
+  FileRenameRequestBody,
+  FileReplaceInitRequestBody,
   FileUploadFinalizeRequestBody,
   FileUploadFinalizeResponseResponse,
   FileUploadInitRequestBody,
   FileUploadInitResponseResponse,
+  FinalizeBlockBasedFileReplacementPathParameters,
   FolderAsset,
   FolderCreateRequestBody,
+  FolderPermissionResponseResponse,
+  FolderRenameRequestBody,
+  GetAssetRolesResponseResponse,
   GetFileEffectivePermissionPathParameters,
   GetFileImageRenditionParams,
   GetFileImageRenditionPathParameters,
   GetFilePathParameters,
+  GetFilePermissionsPathParameters,
+  GetFileRolesPathParameters,
   GetFolderChildrenParams,
   GetFolderChildrenPathParameters,
   GetFolderEffectivePermissionPathParameters,
   GetFolderPathParameters,
-  GetFolderPermissionsPathParameters,
   GetJobStatusPathParameters,
   GetProjectChildrenParams,
   GetProjectChildrenPathParameters,
   GetProjectEffectivePermissionPathParameters,
   GetProjectPathParameters,
   GetProjectPermissionsPathParameters,
+  GetProjectRolesPathParameters,
   GetProjectsParams,
+  InitBlockBasedFileReplacementPathParameters,
   JobStatus,
-  N200GetAssetPermissionsResponse,
-  N200PatchAssetPermissionsResponse,
+  MoveFilePathParameters,
   PaginatedAssetsResponseResponse,
   PaginatedProjectsResponseResponse,
-  PatchAssetPermissionsBody,
+  PatchAssetRolesBody,
+  PatchAssetRolesResponseResponse,
+  PatchFilePermissionsPathParameters,
+  PatchFileRolesPathParameters,
   PatchProjectPermissionsPathParameters,
+  PatchProjectRolesPathParameters,
   ProjectAsset,
   ProjectCreateRequestBody,
+  ProjectPermissionResponseResponse,
+  ProjectRenameRequestBody,
+  RenameFilePathParameters,
+  RenameFolderPathParameters,
+  RenameProjectPathParameters,
+  RestoreFilePathParameters,
+  RestoreFolderPathParameters,
+  RestoreProjectPathParameters,
 } from './storage-and-collaboration-client.schemas';
 
 import { customStorageAxiosInstance } from '../../mutator/custom-storage-axios-instance';
@@ -55,7 +85,6 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 ---
 > NOTE:  
 > * Includes only **CC Projects**.
-> * List does not include **discarded** projects.
 > * The response supports **cursor-based pagination** and includes a `nextUrl` field when additional pages are available.
 > * If there are no further results, the `nextUrl` field is omitted.
 > * Each item in the response provides **basic metadata** about the project.
@@ -119,18 +148,83 @@ export const getProject = (
 };
 
 /**
- * This endpoint marks an existing CC Project, identified by its `assetId`, for discard (soft deletion) along with
-all its descendant assets, from the organization’s ESM shared storage. This operation is allowed only if the
-requester has sufficient permissions to perform destructive actions on the project.
+ * This endpoint deletes(soft deletion) or permanently deletes(hard deletion) an existing CC Project, identified by its `assetId`, along with
+all its descendant assets, from the organization’s ESM shared storage.
 
- * @summary Discard a project by ID
+---
+> NOTE:  
+> * In order to perform hard deletion, the project must be in DELETED state.
+> * The requester must have sufficient permission to perform destructive actions on the project.
+> * If the project is not found or access is denied, appropriate error responses will be returned.
+---
+
+ * @summary Delete project by ID
  */
-export const discardProject = (
-  { assetId }: DiscardProjectPathParameters,
+export const deleteProject = (
+  { assetId }: DeleteProjectPathParameters,
+  params?: DeleteProjectParams,
+  options?: SecondParameter<typeof customStorageAxiosInstance<void>>
+) => {
+  return customStorageAxiosInstance<void>(
+    { url: `/projects/${assetId}`, method: 'DELETE', params },
+    options
+  );
+};
+
+/**
+ * This endpoint updates the name of an existing Project, identified by its `assetId`, within the organization's
+ESM shared storage. This operation is only permitted if the requester has appropriate write-level permissions
+on the project.  
+
+---
+> NOTE:  
+> * Only the name of the project can be modified using this endpoint.
+> * All other project metadata remains unchanged.
+> * If the requester lacks the required permissions or the project does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Rename a project.
+ */
+export const renameProject = (
+  { assetId }: RenameProjectPathParameters,
+  projectRenameRequestBody: ProjectRenameRequestBody,
   options?: SecondParameter<typeof customStorageAxiosInstance<ProjectAsset>>
 ) => {
   return customStorageAxiosInstance<ProjectAsset>(
-    { url: `/projects/${assetId}/discard`, method: 'POST' },
+    {
+      url: `/projects/${assetId}/rename`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: projectRenameRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint restores an existing project, identified by its `assetId`, within the organization's ESM shared storage 
+to an ACTIVE state. Descendants of the project will have their states recomputed to their previous state. This operation
+is only permitted if the requester has appropriate write-level permissions on the project.
+
+---
+> NOTE:
+> * Projects already in an ACTIVE state will remain ACTIVE and return 200 OK.
+> * Descendants that were in a DELETED state prior to the deletion of this project will remain DELETED. Their respective
+descendants will also remain in the DELETED_PARENT or DELETED state as before.
+> * Hard-deleted projects will return a 404 Not Found error.
+> * If the requester lacks the required permissions or the project does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Restore a soft-deleted project.
+ */
+export const restoreProject = (
+  { assetId }: RestoreProjectPathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<ProjectAsset>>
+) => {
+  return customStorageAxiosInstance<ProjectAsset>(
+    { url: `/projects/${assetId}/restore`, method: 'POST' },
     options
   );
 };
@@ -175,44 +269,49 @@ identified by its `assetId`. It evaluates the users access based on:
  */
 export const getProjectEffectivePermission = (
   { assetId }: GetProjectEffectivePermissionPathParameters,
-  options?: SecondParameter<typeof customStorageAxiosInstance<AssetPermissionResponseResponse>>
+  options?: SecondParameter<typeof customStorageAxiosInstance<ProjectPermissionResponseResponse>>
 ) => {
-  return customStorageAxiosInstance<AssetPermissionResponseResponse>(
+  return customStorageAxiosInstance<ProjectPermissionResponseResponse>(
     { url: `/projects/${assetId}/effective-permission`, method: 'GET' },
     options
   );
 };
 
 /**
- * The endpoint retrieves the **explicit roles and permissions** assigned to all users and groups for a specific project,
+ * > This endpoint is deprecated and will be removed on 3/31/2025. Please use the /projects/{assetId}/roles endpoint instead.
+
+The endpoint retrieves the **explicit roles** assigned to all users and groups for a specific project,
 identified by its `assetId`. This includes only the **direct access control entries** defined on the project itself
-and does not include any permissions that are inherited from parent folders or collections.
+and does not include any roles that are inherited from parent folders or collections.
 
 ---
 > NOTE:  
 > * The response lists all users and groups that have direct access to the project, along with their respective
 >   roles (e.g., comment, edit).
-> * This data is useful for auditing and permission management but does not represent the full effective access
+> * This data is useful for auditing and role management but does not represent the full effective access
 >   unless inheritance is also considered.
 > * The project must exist and the requester must have at least read-level access. If the project is not found or
 >   access is denied, appropriate error responses will be returned.
 ---
 
- * @summary Get All permissions for a Project
+ * @deprecated
+ * @summary Get All roles for a Project
  */
 export const getProjectPermissions = (
   { assetId }: GetProjectPermissionsPathParameters,
-  options?: SecondParameter<typeof customStorageAxiosInstance<N200GetAssetPermissionsResponse>>
+  options?: SecondParameter<typeof customStorageAxiosInstance<GetAssetRolesResponseResponse>>
 ) => {
-  return customStorageAxiosInstance<N200GetAssetPermissionsResponse>(
+  return customStorageAxiosInstance<GetAssetRolesResponseResponse>(
     { url: `/projects/${assetId}/permissions`, method: 'GET' },
     options
   );
 };
 
 /**
- * This endpoint is used to manage the direct permissions of a specific project, identified by its `assetId`. It allows
-clients to perform multiple types of permission changes in a single request, including:
+ * > This endpoint is deprecated and will be removed on 3/31/2025. Please use the /projects/{assetId}/roles endpoint instead.
+
+This endpoint is used to manage the direct roles of a specific project, identified by its `assetId`. It allows
+clients to perform multiple types of role changes in a single request, including:
   * Addition of new users or groups to the access control list.
   * Update of roles for existing users or groups.
   * Removal of users or groups from the access control list.
@@ -222,7 +321,7 @@ clients to perform multiple types of permission changes in a single request, inc
 > * The request body supports three arrays: `additions`, `updates`, and `deletions`.
 > * Multiple principals can be included across each action type.
 > * Each principal must be mentioned only once across the entire request body.
-> * Permission changes are deeply inherited — they apply to the project and all of its descendant assets.
+> * Role changes are deeply inherited — they apply to the project and all of its descendant assets.
 
 > ## Validation Rules
 > | Action | Behavior |
@@ -232,19 +331,87 @@ clients to perform multiple types of permission changes in a single request, inc
 > | deletions | Must target users/groups that **already exist** in the current ACL. |
 ---
 
- * @summary Patch Permissions for a Project
+ * @deprecated
+ * @summary Patch Roles for a Project
  */
 export const patchProjectPermissions = (
   { assetId }: PatchProjectPermissionsPathParameters,
-  patchAssetPermissionsBody: PatchAssetPermissionsBody,
-  options?: SecondParameter<typeof customStorageAxiosInstance<N200PatchAssetPermissionsResponse>>
+  patchAssetRolesBody: PatchAssetRolesBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<PatchAssetRolesResponseResponse>>
 ) => {
-  return customStorageAxiosInstance<N200PatchAssetPermissionsResponse>(
+  return customStorageAxiosInstance<PatchAssetRolesResponseResponse>(
     {
       url: `/projects/${assetId}/permissions`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: patchAssetPermissionsBody,
+      data: patchAssetRolesBody,
+    },
+    options
+  );
+};
+
+/**
+ * The endpoint retrieves the **explicit roles** assigned to all users and groups for a specific project,
+identified by its `assetId`. This includes only the **direct access control entries** defined on the project itself
+and does not include any roles that are inherited from parent folders or collections.
+
+---
+> NOTE:  
+> * The response lists all users and groups that have direct access to the project, along with their respective
+>   roles (e.g., comment, edit).
+> * This data is useful for auditing and role management but does not represent the full effective access
+>   unless inheritance is also considered.
+> * The project must exist and the requester must have at least read-level access. If the project is not found or
+>   access is denied, appropriate error responses will be returned.
+---
+
+ * @summary Get All roles for a Project
+ */
+export const getProjectRoles = (
+  { assetId }: GetProjectRolesPathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<GetAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<GetAssetRolesResponseResponse>(
+    { url: `/projects/${assetId}/roles`, method: 'GET' },
+    options
+  );
+};
+
+/**
+ * This endpoint is used to manage the direct roles of a specific project, identified by its `assetId`. It allows
+clients to perform multiple types of role changes in a single request, including:
+  * Addition of new users or groups to the access control list.
+  * Update of roles for existing users or groups.
+  * Removal of users or groups from the access control list.
+
+---
+> NOTE:  
+> * The request body supports three arrays: `additions`, `updates`, and `deletions`.
+> * Multiple principals can be included across each action type.
+> * Each principal must be mentioned only once across the entire request body.
+> * Role changes are deeply inherited — they apply to the project and all of its descendant assets.
+
+> ## Validation Rules
+> | Action | Behavior |
+> | ------ | -------- |
+> | additions | Must include users/groups that **do not already exist** in the current ACL. |
+> | updates | Must target users/groups that **already exist** in the current ACL. |
+> | deletions | Must target users/groups that **already exist** in the current ACL. |
+---
+
+ * @summary Patch Roles for a Project
+ */
+export const patchProjectRoles = (
+  { assetId }: PatchProjectRolesPathParameters,
+  patchAssetRolesBody: PatchAssetRolesBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<PatchAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<PatchAssetRolesResponseResponse>(
+    {
+      url: `/projects/${assetId}/roles`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchAssetRolesBody,
     },
     options
   );
@@ -297,6 +464,90 @@ export const getFolder = (
 };
 
 /**
+ * This endpoint deletes(soft deletion) or permanently deletes(hard deletion) an existing folder, identified by its `assetId`, along with
+all its descendant assets, from the organization’s ESM shared storage.
+
+---
+> NOTE:  
+> * In order to perform hard deletion, the folder must be in DELETED state. 
+> * The requester must have sufficient permission to perform destructive actions on the folder.
+> * If the folder is not found or access is denied, appropriate error responses will be returned.
+---
+
+ * @summary Delete folder by ID
+ */
+export const deleteFolder = (
+  { assetId }: DeleteFolderPathParameters,
+  params?: DeleteFolderParams,
+  options?: SecondParameter<typeof customStorageAxiosInstance<void>>
+) => {
+  return customStorageAxiosInstance<void>(
+    { url: `/folders/${assetId}`, method: 'DELETE', params },
+    options
+  );
+};
+
+/**
+ * This endpoint updates the name of an existing Folder, identified by its `assetId`. This operation is only permitted if the requester has appropriate write-level permissions
+on the folder.  
+
+---
+> NOTE:  
+> * Only the name of the folder can be modified using this endpoint.
+> * All other folder metadata remains unchanged.
+> * If the requester lacks the required permissions or the folder does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Rename a folder.
+ */
+export const renameFolder = (
+  { assetId }: RenameFolderPathParameters,
+  folderRenameRequestBody: FolderRenameRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FolderAsset>>
+) => {
+  return customStorageAxiosInstance<FolderAsset>(
+    {
+      url: `/folders/${assetId}/rename`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: folderRenameRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint restores an existing folder, identified by its `assetId`, within the organization's ESM shared storage 
+to an ACTIVE state. Descendants of the folder will have their states recomputed to their previous state. This operation
+is only permitted if the requester has appropriate write-level permissions on the folder.
+
+---
+> NOTE:
+> * Folders already in an ACTIVE state will remain ACTIVE and return 200 OK.
+> * Restore operations can only be invoked on roots of DELETED trees. Restore calls made on assets in a DELETED_PARENT
+state will return a 409 Conflict error.
+> * Descendants of this folder that were in a DELETED state prior its deletion will remain DELETED. Their respective
+descendants will also remain in a DELETED_PARENT or DELETED state as before.
+> * Hard-deleted folders will return a 404 Not Found error.
+> * If an asset with the same path already exists, the restored folder will be renamed automatically.
+> * If the requester lacks the required permissions or the folder does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Restore a soft-deleted folder.
+ */
+export const restoreFolder = (
+  { assetId }: RestoreFolderPathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FolderAsset>>
+) => {
+  return customStorageAxiosInstance<FolderAsset>(
+    { url: `/folders/${assetId}/restore`, method: 'POST' },
+    options
+  );
+};
+
+/**
  * This endpoint retrieves a paginated list of top-level assets (folders, files, or other resources) contained within
 a specified folder, identified by its `assetId`. This allows clients to explore the immediate children of the
 folder, supporting use cases like folder browsing and navigation.  
@@ -337,37 +588,10 @@ identified by its `assetId`. It evaluates the users access based on:
  */
 export const getFolderEffectivePermission = (
   { assetId }: GetFolderEffectivePermissionPathParameters,
-  options?: SecondParameter<typeof customStorageAxiosInstance<AssetPermissionResponseResponse>>
+  options?: SecondParameter<typeof customStorageAxiosInstance<FolderPermissionResponseResponse>>
 ) => {
-  return customStorageAxiosInstance<AssetPermissionResponseResponse>(
+  return customStorageAxiosInstance<FolderPermissionResponseResponse>(
     { url: `/folders/${assetId}/effective-permission`, method: 'GET' },
-    options
-  );
-};
-
-/**
- * The endpoint retrieves the **explicit roles and permissions** assigned to all users and groups for a specific folder,
-identified by its `assetId`. This includes only the **direct access control entries** defined on the folder itself
-and does not include any permissions that are inherited from parent folders or the containing project.
-
----
-> NOTE:  
-> * The response lists all users and groups that have direct access to the folder, along with their respective
->   roles (e.g., comment, edit).
-> * This data is useful for auditing and permission management but does not represent the full effective access
->   unless inheritance is also considered.
-> * The folder must exist and the requester must have at least read-level access. If the folder is not found or
->   access is denied, appropriate error responses will be returned.
----
-
- * @summary Get All permissions for a Folder
- */
-export const getFolderPermissions = (
-  { assetId }: GetFolderPermissionsPathParameters,
-  options?: SecondParameter<typeof customStorageAxiosInstance<N200GetAssetPermissionsResponse>>
-) => {
-  return customStorageAxiosInstance<N200GetAssetPermissionsResponse>(
-    { url: `/folders/${assetId}/permissions`, method: 'GET' },
     options
   );
 };
@@ -398,6 +622,85 @@ export const getFile = (
 };
 
 /**
+ * This endpoint deletes(soft deletion) or permanently deletes(hard deletion) an existing file, identified by its `assetId`, from the organization’s ESM shared storage.
+
+---
+> NOTE:  
+> * In order to perform hard delete, the file must be in DELETED state.
+> * The requester must have sufficient permissions to perform destructive actions on the file.
+> * If the file is not found or access is denied, appropriate error responses will be returned.
+---
+
+ * @summary Delete file by ID
+ */
+export const deleteFile = (
+  { assetId }: DeleteFilePathParameters,
+  params?: DeleteFileParams,
+  options?: SecondParameter<typeof customStorageAxiosInstance<void>>
+) => {
+  return customStorageAxiosInstance<void>(
+    { url: `/files/${assetId}`, method: 'DELETE', params },
+    options
+  );
+};
+
+/**
+ * This endpoint updates the name of an existing File, identified by its `assetId`. This operation is only permitted if the requester has appropriate write-level permissions
+on the file.  
+
+---
+> NOTE:  
+> * Only the name of the file can be modified using this endpoint.
+> * All other file metadata remains unchanged.
+> * If the requester lacks the required permissions or the file does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Rename a file.
+ */
+export const renameFile = (
+  { assetId }: RenameFilePathParameters,
+  fileRenameRequestBody: FileRenameRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileAsset>>
+) => {
+  return customStorageAxiosInstance<FileAsset>(
+    {
+      url: `/files/${assetId}/rename`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: fileRenameRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint restores an existing file, identified by its `assetId`, within the organization's ESM shared storage 
+to an ACTIVE state. This operation is only permitted if the requester has appropriate write-level permissions on the file.
+
+---
+> NOTE:
+> * Files already in an ACTIVE state will remain ACTIVE and return 200 OK.
+> * Restore calls made on assets in a DELETED_PARENT state will return a 409 Conflict error.
+> * Hard-deleted files will return a 404 Not Found error.
+> * If an asset with the same path already exists, the restored file will be renamed automatically.
+> * If the requester lacks the required permissions or the file does not exist, an appropriate error response
+> will be returned.
+---
+
+ * @summary Restore a soft-deleted file.
+ */
+export const restoreFile = (
+  { assetId }: RestoreFilePathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileAsset>>
+) => {
+  return customStorageAxiosInstance<FileAsset>(
+    { url: `/files/${assetId}/restore`, method: 'POST' },
+    options
+  );
+};
+
+/**
  * The endpoint retrieves the **effective permission (role)** assigned to the user for a specific file,
 identified by its `assetId`. It evaluates the users access based on: 
   * **Direct permissions** assigned to the file.
@@ -408,10 +711,215 @@ identified by its `assetId`. It evaluates the users access based on:
  */
 export const getFileEffectivePermission = (
   { assetId }: GetFileEffectivePermissionPathParameters,
-  options?: SecondParameter<typeof customStorageAxiosInstance<AssetPermissionResponseResponse>>
+  options?: SecondParameter<typeof customStorageAxiosInstance<FilePermissionResponseResponse>>
 ) => {
-  return customStorageAxiosInstance<AssetPermissionResponseResponse>(
+  return customStorageAxiosInstance<FilePermissionResponseResponse>(
     { url: `/files/${assetId}/effective-permission`, method: 'GET' },
+    options
+  );
+};
+
+/**
+ * > This endpoint is deprecated and will be removed on 3/31/2025. Please use the /files/{assetId}/roles endpoint instead.
+
+The endpoint retrieves the **explicit roles** assigned to all users and groups for a specific file,
+identified by its `assetId`. This includes only the **direct access control entries** defined on the file itself
+and does not include any roles that are inherited from parent folders or the containing project.
+
+---
+> NOTE:  
+> * The response lists all users and groups that have direct access to the file, along with their respective
+>   roles (e.g., comment, edit).
+> * This data is useful for auditing and role management but does not represent the full effective access
+>   unless inheritance is also considered.
+> * The file must exist and the requester must have at least read-level access. If the file is not found or
+>   access is denied, appropriate error responses will be returned.
+---
+
+ * @deprecated
+ * @summary Get All roles for a File
+ */
+export const getFilePermissions = (
+  { assetId }: GetFilePermissionsPathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<GetAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<GetAssetRolesResponseResponse>(
+    { url: `/files/${assetId}/permissions`, method: 'GET' },
+    options
+  );
+};
+
+/**
+ * > This endpoint is deprecated and will be removed on 3/31/2025. Please use the /files/{assetId}/roles endpoint instead.
+
+This endpoint is used to manage the direct roles of a specific file, identified by its `assetId`. It allows
+clients to perform multiple types of role changes in a single request, including:
+  * Addition of new users or groups to the access control list.
+  * Update of roles for existing users or groups.
+  * Removal of users or groups from the access control list.
+
+---
+> NOTE:  
+> * The request body supports three arrays: `additions`, `updates`, and `deletions`.
+> * Multiple principals can be included across each action type.
+> * Each principal must be mentioned only once across the entire request body.
+> * Role changes apply directly to the file.
+
+> ## Validation Rules
+> | Action | Behavior |
+> | ------ | -------- |
+> | additions | Must include users/groups that **do not already exist** in the current ACL. |
+> | updates | Must target users/groups that **already exist** in the current ACL. |
+> | deletions | Must target users/groups that **already exist** in the current ACL. |
+---
+
+ * @deprecated
+ * @summary Patch Roles for a File
+ */
+export const patchFilePermissions = (
+  { assetId }: PatchFilePermissionsPathParameters,
+  patchAssetRolesBody: PatchAssetRolesBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<PatchAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<PatchAssetRolesResponseResponse>(
+    {
+      url: `/files/${assetId}/permissions`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchAssetRolesBody,
+    },
+    options
+  );
+};
+
+/**
+ * The endpoint retrieves the **explicit roles** assigned to all users and groups for a specific file,
+identified by its `assetId`. This includes only the **direct access control entries** defined on the file itself
+and does not include any roles that are inherited from parent folders or the containing project.
+
+---
+> NOTE:  
+> * The response lists all users and groups that have direct access to the file, along with their respective
+>   roles (e.g., comment, edit).
+> * This data is useful for auditing and role management but does not represent the full effective access
+>   unless inheritance is also considered.
+> * The file must exist and the requester must have at least read-level access. If the file is not found or
+>   access is denied, appropriate error responses will be returned.
+---
+
+ * @summary Get All roles for a File
+ */
+export const getFileRoles = (
+  { assetId }: GetFileRolesPathParameters,
+  options?: SecondParameter<typeof customStorageAxiosInstance<GetAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<GetAssetRolesResponseResponse>(
+    { url: `/files/${assetId}/roles`, method: 'GET' },
+    options
+  );
+};
+
+/**
+ * This endpoint is used to manage the direct roles of a specific file, identified by its `assetId`. It allows
+clients to perform multiple types of role changes in a single request, including:
+  * Addition of new users or groups to the access control list.
+  * Update of roles for existing users or groups.
+  * Removal of users or groups from the access control list.
+
+---
+> NOTE:  
+> * The request body supports three arrays: `additions`, `updates`, and `deletions`.
+> * Multiple principals can be included across each action type.
+> * Each principal must be mentioned only once across the entire request body.
+> * Role changes apply directly to the file.
+
+> ## Validation Rules
+> | Action | Behavior |
+> | ------ | -------- |
+> | additions | Must include users/groups that **do not already exist** in the current ACL. |
+> | updates | Must target users/groups that **already exist** in the current ACL. |
+> | deletions | Must target users/groups that **already exist** in the current ACL. |
+---
+
+ * @summary Patch Roles for a File
+ */
+export const patchFileRoles = (
+  { assetId }: PatchFileRolesPathParameters,
+  patchAssetRolesBody: PatchAssetRolesBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<PatchAssetRolesResponseResponse>>
+) => {
+  return customStorageAxiosInstance<PatchAssetRolesResponseResponse>(
+    {
+      url: `/files/${assetId}/roles`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: patchAssetRolesBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint performs an asynchronous copy of an existing file asset, identified by its `assetId`, into another
+folder or project. The operation requires the requester to have, at minimum, the following roles:
+| Location | Role(s) |
+| -------- | ------- |
+| Source   | comment |
+| Target   | edit    |
+
+---
+> NOTE:  
+> * If the requester lacks the required roles or the file does not exist, an appropriate error response will be
+> returned.
+---
+
+ * @summary Copies a file to a new location.
+ */
+export const copyFile = (
+  { assetId }: CopyFilePathParameters,
+  fileCopyRequestBody: FileCopyRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileCopyAcceptedResponseResponse>>
+) => {
+  return customStorageAxiosInstance<FileCopyAcceptedResponseResponse>(
+    {
+      url: `/files/${assetId}/copy`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: fileCopyRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint performs an asynchronous move of an existing file asset, identified by its `assetId`, into another
+folder or project. The operation requires the requester to have, at minimum, the following roles:
+| Location          | Role(s) |
+| ----------------- | ------- |
+| Source            | comment |
+| Source's parent   | edit    |
+| Target            | edit    |
+
+---
+> NOTE:  
+> * If the requester lacks the required roles or the file does not exist, an appropriate error response will be
+> returned.
+---
+
+ * @summary Move a file to a new location.
+ */
+export const moveFile = (
+  { assetId }: MoveFilePathParameters,
+  fileMoveRequestBody: FileMoveRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileMoveAcceptedResponseResponse>>
+) => {
+  return customStorageAxiosInstance<FileMoveAcceptedResponseResponse>(
+    {
+      url: `/files/${assetId}/move`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: fileMoveRequestBody,
+    },
     options
   );
 };
@@ -438,12 +946,12 @@ export const downloadFile = (
   params?: DownloadFileParams,
   options?: SecondParameter<
     typeof customStorageAxiosInstance<
-      FileDownloadUrlResponseResponse | FileDownloadAcceptedResponseResponse
+      FileDownloadOKResponseResponse | FileDownloadAcceptedResponseResponse
     >
   >
 ) => {
   return customStorageAxiosInstance<
-    FileDownloadUrlResponseResponse | FileDownloadAcceptedResponseResponse
+    FileDownloadOKResponseResponse | FileDownloadAcceptedResponseResponse
   >({ url: `/files/${assetId}/download`, method: 'GET', params }, options);
 };
 
@@ -539,7 +1047,7 @@ export const initBlockBasedFileUpload = (
 
 /**
  * This endpoint finalizes the block upload process by initiating an asynchronous job that will merge all uploaded blocks and
-creates the final file asset. In case of asynchronous operation succeed, the asset field will contain the newly created file's
+creates the final file asset. In case of asynchronous operation success, the asset field will contain the newly created file's
 metadata as defined by File Schema.
 
 ---
@@ -581,6 +1089,117 @@ export const finalizeBlockBasedFileUpload = (
 };
 
 /**
+ * Initializes a block based replacement job for an existing file. The init response provides a set of pre-signed URLs
+for uploading individual blocks, transferred over separate requests. Once the replacement file content is uploaded,
+the finalize endpoint is called to finalize the replacement.
+
+The file's `assetId`, permissions, and metadata are preserved while the content is replaced.
+
+---
+> NOTE:
+> For files 10 MB or larger, direct replacement is not supported. Clients must use this block-based replacement workflow.
+> block-based transfer is allowed for any size
+---  
+
+## Replacement Flow Overview
+### 1. Initiate Replacement:
+Client sends a POST request to initiate the block replacement and receives a response with URLs for uploading individual blocks
+and finalizing the transfer.
+
+### 2. Upload Blocks:
+Client issues PUT requests to the provided Block Transfer URLs, sending file data in chunks. These can be uploaded in parallel.  
+
+---
+> NOTE:
+> ####Uploading File Blocks 
+> After receiving `transferLinks`, clients can use them to upload individual blocks:
+> **PUT <transferURL>**
+> **<binary data>**  
+>
+> * **Authorization Header**: Must NOT be included in the request.
+> * **Success Response**: 200 OK indicates successful block upload.
+> * **Expiration Handling**: Each upload session is time-bound. If blocks are not uploaded within the specified expiration window
+> (urlExpirationDate field from the initiation response), the operation may fail.
+>   - **Always check and respect the urlExpirationDate timestamp** in the response from the Block Upload Init endpoint.
+---
+
+### 3. Finalize Replacement:
+After all blocks are uploaded, the client calls the [Block Finalize URL](#/Files/finalizeBlockBasedFileReplacement) to trigger the replacement.
+
+### 4. Monitor:
+Finalize operation's response includes a Monitor URL to check the final status.
+
+# Initialize the Block-Based Replacement
+This endpoint allows clients to initiate the replacement of an existing file's content using block-based transfer.
+
+---
+> NOTE:
+> * The expiration duration of transfer URLs is explicitly provided to the client in the response
+> * The Content-Type must match the existing file's media type. Attempting to change the content type will result in a **415 Unsupported Media Type** error.
+---
+
+ * @summary Initialize a block based file replacement job
+ */
+export const initBlockBasedFileReplacement = (
+  { assetId }: InitBlockBasedFileReplacementPathParameters,
+  fileReplaceInitRequestBody: FileReplaceInitRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileUploadInitResponseResponse>>
+) => {
+  return customStorageAxiosInstance<FileUploadInitResponseResponse>(
+    {
+      url: `/files/${assetId}/upload/init`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: fileReplaceInitRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * This endpoint finalizes the block replacement process by initiating an asynchronous job that will merge all uploaded
+blocks and replace the existing file's content. The file's `assetId`, permissions, and metadata are preserved.
+
+---
+> NOTE:
+> ### Validation and Behavior for Finalize (Block-Based Replacement)
+> The following rules govern how the server interprets the finalization request for a block-based replacement:
+> 
+> #### File Size in Initialization
+> * The size provided during the initiate request is treated as an estimate, not a strict validation boundary.
+> * Clients are not penalized if the actual uploaded content size differs from the declared size.
+> * In future, clients will be able to extend block sets if their initial estimate is too low (see Future Enhancements).
+
+> #### Skipped Blocks
+> * Clients are allowed to skip any block from the original transferLinks list, as long as part numbers remain ordered and
+> are accurately reported in the `usedTransferLinks` array during finalize.
+> * Skipped parts should simply be omitted from `usedTransferLinks`.
+
+> #### Finalization is based on:
+> * The used part numbers explicitly listed in the `usedTransferLinks` array.
+> * The server will stitch together content in the order of these part numbers.
+> * Any parts not listed will be ignored even if data was uploaded to them.
+---
+
+ * @summary Finalize a block based file replacement job
+ */
+export const finalizeBlockBasedFileReplacement = (
+  { assetId }: FinalizeBlockBasedFileReplacementPathParameters,
+  fileUploadFinalizeRequestBody: FileUploadFinalizeRequestBody,
+  options?: SecondParameter<typeof customStorageAxiosInstance<FileUploadFinalizeResponseResponse>>
+) => {
+  return customStorageAxiosInstance<FileUploadFinalizeResponseResponse>(
+    {
+      url: `/files/${assetId}/upload/finalize`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: fileUploadFinalizeRequestBody,
+    },
+    options
+  );
+};
+
+/**
  * This endpoint retrieves the current status of an asynchronous job identified by its jobId.
 
 ---
@@ -606,7 +1225,9 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 export type GetProjectsResult = NonNullable<Awaited<ReturnType<typeof getProjects>>>;
 export type CreateProjectResult = NonNullable<Awaited<ReturnType<typeof createProject>>>;
 export type GetProjectResult = NonNullable<Awaited<ReturnType<typeof getProject>>>;
-export type DiscardProjectResult = NonNullable<Awaited<ReturnType<typeof discardProject>>>;
+export type DeleteProjectResult = NonNullable<Awaited<ReturnType<typeof deleteProject>>>;
+export type RenameProjectResult = NonNullable<Awaited<ReturnType<typeof renameProject>>>;
+export type RestoreProjectResult = NonNullable<Awaited<ReturnType<typeof restoreProject>>>;
 export type GetProjectChildrenResult = NonNullable<Awaited<ReturnType<typeof getProjectChildren>>>;
 export type GetProjectEffectivePermissionResult = NonNullable<
   Awaited<ReturnType<typeof getProjectEffectivePermission>>
@@ -617,19 +1238,32 @@ export type GetProjectPermissionsResult = NonNullable<
 export type PatchProjectPermissionsResult = NonNullable<
   Awaited<ReturnType<typeof patchProjectPermissions>>
 >;
+export type GetProjectRolesResult = NonNullable<Awaited<ReturnType<typeof getProjectRoles>>>;
+export type PatchProjectRolesResult = NonNullable<Awaited<ReturnType<typeof patchProjectRoles>>>;
 export type CreateFolderResult = NonNullable<Awaited<ReturnType<typeof createFolder>>>;
 export type GetFolderResult = NonNullable<Awaited<ReturnType<typeof getFolder>>>;
+export type DeleteFolderResult = NonNullable<Awaited<ReturnType<typeof deleteFolder>>>;
+export type RenameFolderResult = NonNullable<Awaited<ReturnType<typeof renameFolder>>>;
+export type RestoreFolderResult = NonNullable<Awaited<ReturnType<typeof restoreFolder>>>;
 export type GetFolderChildrenResult = NonNullable<Awaited<ReturnType<typeof getFolderChildren>>>;
 export type GetFolderEffectivePermissionResult = NonNullable<
   Awaited<ReturnType<typeof getFolderEffectivePermission>>
 >;
-export type GetFolderPermissionsResult = NonNullable<
-  Awaited<ReturnType<typeof getFolderPermissions>>
->;
 export type GetFileResult = NonNullable<Awaited<ReturnType<typeof getFile>>>;
+export type DeleteFileResult = NonNullable<Awaited<ReturnType<typeof deleteFile>>>;
+export type RenameFileResult = NonNullable<Awaited<ReturnType<typeof renameFile>>>;
+export type RestoreFileResult = NonNullable<Awaited<ReturnType<typeof restoreFile>>>;
 export type GetFileEffectivePermissionResult = NonNullable<
   Awaited<ReturnType<typeof getFileEffectivePermission>>
 >;
+export type GetFilePermissionsResult = NonNullable<Awaited<ReturnType<typeof getFilePermissions>>>;
+export type PatchFilePermissionsResult = NonNullable<
+  Awaited<ReturnType<typeof patchFilePermissions>>
+>;
+export type GetFileRolesResult = NonNullable<Awaited<ReturnType<typeof getFileRoles>>>;
+export type PatchFileRolesResult = NonNullable<Awaited<ReturnType<typeof patchFileRoles>>>;
+export type CopyFileResult = NonNullable<Awaited<ReturnType<typeof copyFile>>>;
+export type MoveFileResult = NonNullable<Awaited<ReturnType<typeof moveFile>>>;
 export type DownloadFileResult = NonNullable<Awaited<ReturnType<typeof downloadFile>>>;
 export type GetFileImageRenditionResult = NonNullable<
   Awaited<ReturnType<typeof getFileImageRendition>>
@@ -639,5 +1273,11 @@ export type InitBlockBasedFileUploadResult = NonNullable<
 >;
 export type FinalizeBlockBasedFileUploadResult = NonNullable<
   Awaited<ReturnType<typeof finalizeBlockBasedFileUpload>>
+>;
+export type InitBlockBasedFileReplacementResult = NonNullable<
+  Awaited<ReturnType<typeof initBlockBasedFileReplacement>>
+>;
+export type FinalizeBlockBasedFileReplacementResult = NonNullable<
+  Awaited<ReturnType<typeof finalizeBlockBasedFileReplacement>>
 >;
 export type GetJobStatusResult = NonNullable<Awaited<ReturnType<typeof getJobStatus>>>;
