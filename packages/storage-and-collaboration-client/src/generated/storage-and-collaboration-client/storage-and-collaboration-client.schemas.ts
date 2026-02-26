@@ -23,14 +23,18 @@ export const ErrorCodeEnums = {
   resource_not_found: 'resource_not_found',
   not_acceptable: 'not_acceptable',
   invalid_operation: 'invalid_operation',
+  conflict: 'conflict',
   cursor_expired: 'cursor_expired',
   precondition_failed: 'precondition_failed',
   etag_mismatch: 'etag_mismatch',
+  payload_too_large: 'payload_too_large',
   invalid_content_type: 'invalid_content_type',
   validation_error: 'validation_error',
+  resource_too_large: 'resource_too_large',
   rate_limited: 'rate_limited',
   runtime_error: 'runtime_error',
   not_implemented: 'not_implemented',
+  operation_timeout: 'operation_timeout',
   storage_quota_exceeded: 'storage_quota_exceeded',
 } as const;
 
@@ -55,25 +59,6 @@ export const AssetTypeEnums = {
 } as const;
 
 /**
- * Describes the result of the permission patch for each principal.  
-
----
-> NOTE:  
-> This list is not exhaustive and will be updated as new permission patch results are added. Clients should expect new permission patch results to be added in the future.
----
-
- */
-export type PatchPermissionResultEnums =
-  (typeof PatchPermissionResultEnums)[keyof typeof PatchPermissionResultEnums];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PatchPermissionResultEnums = {
-  successful: 'successful',
-  failed: 'failed',
-  pending: 'pending',
-} as const;
-
-/**
  * It describes the type of asynchronous job, depends on the original API invocation that created the job.  
 
 ---
@@ -88,9 +73,11 @@ export type JobTypeEnums = (typeof JobTypeEnums)[keyof typeof JobTypeEnums];
 export const JobTypeEnums = {
   file_upload: 'file_upload',
   file_download: 'file_download',
-  copy_asset: 'copy_asset',
-  move_asset: 'move_asset',
-  package_asset: 'package_asset',
+  file_copy: 'file_copy',
+  file_move: 'file_move',
+  folder_copy: 'folder_copy',
+  folder_move: 'folder_move',
+  project_package: 'project_package',
 } as const;
 
 /**
@@ -113,10 +100,11 @@ export const JobStatusEnums = {
 } as const;
 
 /**
- * Represents a generic asset in the system.
-
+ * An identifier provided by the client to identify the request.
+ * @minLength 1
+ * @maxLength 128
  */
-export type Asset = FileAsset | FolderAsset | ProjectAsset;
+export type RequestId = string;
 
 /**
  * Pagination information for collection responses
@@ -160,8 +148,8 @@ export type BaseAssetState = (typeof BaseAssetState)[keyof typeof BaseAssetState
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const BaseAssetState = {
   active: 'active',
-  discarded: 'discarded',
-  discarded_parent: 'discarded_parent',
+  deleted: 'deleted',
+  deleted_parent: 'deleted_parent',
 } as const;
 
 /**
@@ -232,15 +220,49 @@ export interface ErrorResponse {
 
 /**
  * The name of the asset (including the extension, in case of a file)
- * @minLength 1
+
+The name must not be a 
+* reserved Windows name
+  - `CON`
+  - `PRN`
+  - `AUX`
+  - `NUL`
+  - `COM1` through `COM9`
+  - `LPT1` through `LPT9`
+* contain any of the following characters: 
+  - `\`
+  - `/`
+  - `:`
+  - `*`
+  - `?`
+  - `"`
+  - `|`
+  - `>`
+  - `<`
+
  * @maxLength 255
+ * @pattern ^(?!^([Cc][Oo][Nn]|[Pp][Rr][Nn]|[Aa][Uu][Xx]|[Nn][Uu][Ll]|[Cc][Oo][Mm][1-9]|[Ll][Pp][Tt][1-9])$)[^\\\/:*?"|><]+$
  */
 export type AssetName = string;
 
 /**
- * Entity tag used for optimistic concurrency control
+ * Controls whether to automatically rename assets when name conflicts occur during
+create, rename, copy, move, or restore operations.
+
+- **false**: Operation fails with 409 Conflict if a name collision occurs (default)
+- **true**: System automatically renames the asset by appending a uniqueness token
+  consisting of a non-breaking space(\u00A0) followed by a counter in round parentheses, e.g. "\u00A0(1)"
+
  */
-export type Etag = string;
+export type Autorename = boolean;
+
+/**
+ * Optional configuration for operation behavior. This object allow clients to customize how operations are executed.
+
+ */
+export interface OperationOptions {
+  autorename?: Autorename;
+}
 
 export type FileAssetAllOf = {
   assetType: string;
@@ -251,8 +273,6 @@ export type FileAssetAllOf = {
    * @minimum 0
    */
   size: number;
-  /** ETag of the file content's */
-  contentEtag: Etag;
 };
 
 export type FileAssetAssetType = (typeof FileAssetAssetType)[keyof typeof FileAssetAssetType];
@@ -290,6 +310,12 @@ export type FolderAsset = BaseAsset &
   };
 
 /**
+ * Represents a generic asset in the system.
+
+ */
+export type Asset = FileAsset | FolderAsset | ProjectAsset;
+
+/**
  * Represents a paginated list of assets
  */
 export interface PaginatedAssets {
@@ -304,6 +330,9 @@ Following roles are supported:
    as well as the ability to share the asset with other users.
 - `comment` - The subject has comment access to the asset. It includes the ability to view the asset
    and add comments to it.
+- `undefined` - In some cases, a permission that cannot be expressed by `edit` or `comment` is returned as `undefined`.
+   The user has some underlying permission to the asset, but the access is not specific enough to be classified as `edit` or `comment`.
+   User operations may be limited. 
 
 ---
 > NOTE:  
@@ -317,84 +346,127 @@ export type RoleEnums = (typeof RoleEnums)[keyof typeof RoleEnums];
 export const RoleEnums = {
   edit: 'edit',
   comment: 'comment',
+  undefined: 'undefined',
 } as const;
 
-export interface BaseDirectPermissionEntry {
+/**
+ * Common Permissions for the user on any kind of asset
+ */
+export interface CommonPermissions {
+  /** Whether the user can share the asset with other users */
+  can_share: boolean;
+  /** Whether the user can comment on the asset */
+  can_comment: boolean;
+  /** Whether the user can download the asset */
+  can_download_assets: boolean;
+}
+
+/**
+ * The permissions for the user applicable to container type of asset
+ */
+export interface ContainerOnlyPermissions {
+  /** Whether the user can move assets inside the container */
+  can_move_assets_inside: boolean;
+  /** Whether the user can move assets outside the container */
+  can_move_assets_outside: boolean;
+}
+
+export type ProjectPermissionsAllOf = {
+  /** Whether the user can edit the project */
+  can_edit_project: boolean;
+  /** Whether the user can view the project */
+  can_view_project: boolean;
+  /** Whether the user can restore the project */
+  can_restore: boolean;
+  /** Whether the user can soft delete the project */
+  can_delete: boolean;
+  /** Whether the user can permanently delete the project */
+  can_permanent_delete: boolean;
+};
+
+/**
+ * The permissions for the user on a project
+ */
+export type ProjectPermissions = CommonPermissions &
+  ContainerOnlyPermissions &
+  ProjectPermissionsAllOf;
+
+export interface BaseDirectRoleEntry {
   id: PrincipalId;
   /** Display name of the principal. */
   name: string;
   role: RoleEnums;
 }
 
-export type UserDirectPermissionEntryAllOf = {
+export type UserDirectRoleEntryAllOf = {
   type: string;
   /** Email of the user. */
   email: string;
 };
 
-export type UserDirectPermissionEntryType =
-  (typeof UserDirectPermissionEntryType)[keyof typeof UserDirectPermissionEntryType];
+export type UserDirectRoleEntryType =
+  (typeof UserDirectRoleEntryType)[keyof typeof UserDirectRoleEntryType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const UserDirectPermissionEntryType = {
+export const UserDirectRoleEntryType = {
   user: 'user',
 } as const;
 
-export type UserDirectPermissionEntry = BaseDirectPermissionEntry &
-  UserDirectPermissionEntryAllOf & {
-    type: UserDirectPermissionEntryType;
+export type UserDirectRoleEntry = BaseDirectRoleEntry &
+  UserDirectRoleEntryAllOf & {
+    type: UserDirectRoleEntryType;
   };
 
-export type GroupDirectPermissionEntryAllOf = {
+export type GroupDirectRoleEntryAllOf = {
   type: string;
   /** Name of the organization. */
   organizationName: string;
 };
 
-export type GroupDirectPermissionEntryType =
-  (typeof GroupDirectPermissionEntryType)[keyof typeof GroupDirectPermissionEntryType];
+export type GroupDirectRoleEntryType =
+  (typeof GroupDirectRoleEntryType)[keyof typeof GroupDirectRoleEntryType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GroupDirectPermissionEntryType = {
+export const GroupDirectRoleEntryType = {
   group: 'group',
 } as const;
 
-export type GroupDirectPermissionEntry = BaseDirectPermissionEntry &
-  GroupDirectPermissionEntryAllOf & {
-    type: GroupDirectPermissionEntryType;
+export type GroupDirectRoleEntry = BaseDirectRoleEntry &
+  GroupDirectRoleEntryAllOf & {
+    type: GroupDirectRoleEntryType;
   };
 
-export type PredefinedGroupsDirectPermissionEntryAllOf = {
+export type PredefinedGroupsDirectRoleEntryAllOf = {
   type: string;
   /** Name of the organization. */
   organizationName: string;
 };
 
-export type PredefinedGroupsDirectPermissionEntryType =
-  (typeof PredefinedGroupsDirectPermissionEntryType)[keyof typeof PredefinedGroupsDirectPermissionEntryType];
+export type PredefinedGroupsDirectRoleEntryType =
+  (typeof PredefinedGroupsDirectRoleEntryType)[keyof typeof PredefinedGroupsDirectRoleEntryType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PredefinedGroupsDirectPermissionEntryType = {
+export const PredefinedGroupsDirectRoleEntryType = {
   predefined: 'predefined',
 } as const;
 
-export type PredefinedGroupsDirectPermissionEntry = BaseDirectPermissionEntry &
-  PredefinedGroupsDirectPermissionEntryAllOf & {
-    type: PredefinedGroupsDirectPermissionEntryType;
+export type PredefinedGroupsDirectRoleEntry = BaseDirectRoleEntry &
+  PredefinedGroupsDirectRoleEntryAllOf & {
+    type: PredefinedGroupsDirectRoleEntryType;
   };
 
 /**
  * Represents a principal (user, group, or predefined groups) with associated role.
  */
-export type DirectPermissionEntry =
-  | UserDirectPermissionEntry
-  | GroupDirectPermissionEntry
-  | PredefinedGroupsDirectPermissionEntry;
+export type DirectRoleEntry =
+  | UserDirectRoleEntry
+  | GroupDirectRoleEntry
+  | PredefinedGroupsDirectRoleEntry;
 
 /**
- * Represents a pending permission entry for a user along with the role and the timestamp of the invitation.
+ * Represents a pending role entry for a user along with the role and the timestamp of the invitation.
  */
-export interface PendingPermissionEntry {
+export interface PendingRoleEntry {
   /** Email address of the invited user. */
   email: string;
   role: RoleEnums;
@@ -404,9 +476,9 @@ export interface PendingPermissionEntry {
   id: string;
 }
 
-export interface AssetPermissionsResponse {
-  direct?: DirectPermissionEntry[];
-  pending?: PendingPermissionEntry[];
+export interface AssetRolesResponse {
+  direct?: DirectRoleEntry[];
+  pending?: PendingRoleEntry[];
 }
 
 /**
@@ -427,15 +499,15 @@ export const PrincipalTypeEnums = {
 } as const;
 
 /**
- * Represents a user or group that is being granted permission for an asset
+ * Represents a user or group that is being granted role for an asset
  */
-export type PatchAssetPermissionsRequestDirectAdditionsItem = {
+export type PatchAssetRolesRequestDirectAdditionsItem = {
   /** Provides identifier for the recipient. It can be one of the following formats:
-| Type of Recipient | Format | Description | Example |
-| ----------------- | ------ | ----------- | ------- |
-| User              | mailto:<email of the user | Email address of the recipient | mailto:john.doe@example.com |
-| Group             | name:<group name> | Group name defined in the organization | name:Example Group |
-| Predefined        | name:<predefined principal name> | Predefined principal name | name:_everybody |
+| Type of Recipient | Format                           | Description                            | Example                     |
+| ----------------- | -------------------------------- | -------------------------------------- | --------------------------- |
+| User              | mailto:<email of the user        | Email address of the recipient         | mailto:john.doe@example.com |
+| Group             | name:<group name>                | Group name defined in the organization | name:Example Group          |
+| Predefined        | name:<predefined principal name> | Predefined principal name              | name:_everybody             |
 
 **Note for Predefined Principals:**
 - `_everybody`: Limited to `comment` (grants access to all org users)
@@ -450,7 +522,7 @@ export type PatchAssetPermissionsRequestDirectAdditionsItem = {
 /**
  * Represents a user or group with a new role
  */
-export type PatchAssetPermissionsRequestDirectUpdatesItem = {
+export type PatchAssetRolesRequestDirectUpdatesItem = {
   id: PrincipalId;
   type: PrincipalTypeEnums;
   role: RoleEnums;
@@ -459,107 +531,107 @@ export type PatchAssetPermissionsRequestDirectUpdatesItem = {
 /**
  * Represents a user or group that is being removed from the asset
  */
-export type PatchAssetPermissionsRequestDirectDeletionsItem = {
+export type PatchAssetRolesRequestDirectDeletionsItem = {
   id?: PrincipalId;
   type?: PrincipalTypeEnums;
 };
 
-export type PatchAssetPermissionsRequestDirect = {
+export type PatchAssetRolesRequestDirect = {
   /**
-   * Represents a list of users or groups that are being granted permission for an asset
+   * Represents a list of users or groups that are being granted role for an asset
    * @maxItems 10
    */
-  additions?: PatchAssetPermissionsRequestDirectAdditionsItem[];
+  additions?: PatchAssetRolesRequestDirectAdditionsItem[];
   /**
    * Represents a list of users or groups with a new role
    * @maxItems 10
    */
-  updates?: PatchAssetPermissionsRequestDirectUpdatesItem[];
+  updates?: PatchAssetRolesRequestDirectUpdatesItem[];
   /**
    * Represents a list of users or groups that are being removed from the asset
    * @maxItems 10
    */
-  deletions?: PatchAssetPermissionsRequestDirectDeletionsItem[];
+  deletions?: PatchAssetRolesRequestDirectDeletionsItem[];
 };
 
 /**
- * Represents the request body for a patch operation on permissions for an asset
+ * Represents the request body for a patch operation on roles for an asset
  */
-export interface PatchAssetPermissionsRequest {
-  direct: PatchAssetPermissionsRequestDirect;
+export interface PatchAssetRolesRequest {
+  direct: PatchAssetRolesRequestDirect;
 }
 
 /**
- * Represents a base permission entry
+ * Represents a base role entry
  */
-export interface BasePatchPermissionEntry {
+export interface BasePatchRoleEntry {
   id: PrincipalId;
   type: PrincipalTypeEnums;
 }
 
-export type SuccessfulPatchPermissionEntryAllOf = {
+export type SuccessfulPatchRoleEntryAllOf = {
   status?: string;
   role?: RoleEnums;
 };
 
-export type SuccessfulPatchPermissionEntryStatus =
-  (typeof SuccessfulPatchPermissionEntryStatus)[keyof typeof SuccessfulPatchPermissionEntryStatus];
+export type SuccessfulPatchRoleEntryStatus =
+  (typeof SuccessfulPatchRoleEntryStatus)[keyof typeof SuccessfulPatchRoleEntryStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SuccessfulPatchPermissionEntryStatus = {
+export const SuccessfulPatchRoleEntryStatus = {
   successful: 'successful',
 } as const;
 
 /**
- * Represents a successful permission entry
+ * Represents a successful role entry
  */
-export type SuccessfulPatchPermissionEntry = BasePatchPermissionEntry &
-  SuccessfulPatchPermissionEntryAllOf & {
-    status: SuccessfulPatchPermissionEntryStatus;
+export type SuccessfulPatchRoleEntry = BasePatchRoleEntry &
+  SuccessfulPatchRoleEntryAllOf & {
+    status: SuccessfulPatchRoleEntryStatus;
   } & Required<
     Pick<
-      BasePatchPermissionEntry &
-        SuccessfulPatchPermissionEntryAllOf & {
-          status: SuccessfulPatchPermissionEntryStatus;
+      BasePatchRoleEntry &
+        SuccessfulPatchRoleEntryAllOf & {
+          status: SuccessfulPatchRoleEntryStatus;
         },
       'status' | 'status'
     >
   >;
 
-export type FailedPatchPermissionEntryAllOf = {
+export type FailedPatchRoleEntryAllOf = {
   status?: string;
   error_code?: string;
   message?: string;
   role?: RoleEnums;
 };
 
-export type FailedPatchPermissionEntryStatus =
-  (typeof FailedPatchPermissionEntryStatus)[keyof typeof FailedPatchPermissionEntryStatus];
+export type FailedPatchRoleEntryStatus =
+  (typeof FailedPatchRoleEntryStatus)[keyof typeof FailedPatchRoleEntryStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const FailedPatchPermissionEntryStatus = {
+export const FailedPatchRoleEntryStatus = {
   failed: 'failed',
 } as const;
 
 /**
- * Represents a failed permission entry
+ * Represents a failed role entry
  */
-export type FailedPatchPermissionEntry = BasePatchPermissionEntry &
-  FailedPatchPermissionEntryAllOf & {
-    status: FailedPatchPermissionEntryStatus;
+export type FailedPatchRoleEntry = BasePatchRoleEntry &
+  FailedPatchRoleEntryAllOf & {
+    status: FailedPatchRoleEntryStatus;
     [key: string]: unknown;
   } & Required<
     Pick<
-      BasePatchPermissionEntry &
-        FailedPatchPermissionEntryAllOf & {
-          status: FailedPatchPermissionEntryStatus;
+      BasePatchRoleEntry &
+        FailedPatchRoleEntryAllOf & {
+          status: FailedPatchRoleEntryStatus;
           [key: string]: unknown;
         },
       'status' | 'error_code' | 'message' | 'status'
     >
   >;
 
-export type PendingPatchPermissionEntryAllOf = {
+export type PendingPatchRoleEntryAllOf = {
   status?: string;
   created?: Date;
   /** Email of the user. */
@@ -567,51 +639,124 @@ export type PendingPatchPermissionEntryAllOf = {
   role?: RoleEnums;
 };
 
-export type PendingPatchPermissionEntryStatus =
-  (typeof PendingPatchPermissionEntryStatus)[keyof typeof PendingPatchPermissionEntryStatus];
+export type PendingPatchRoleEntryStatus =
+  (typeof PendingPatchRoleEntryStatus)[keyof typeof PendingPatchRoleEntryStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PendingPatchPermissionEntryStatus = {
+export const PendingPatchRoleEntryStatus = {
   pending: 'pending',
 } as const;
 
 /**
- * Represents a pending permission entry
+ * Represents a pending role entry
  */
-export type PendingPatchPermissionEntry = BasePatchPermissionEntry &
-  PendingPatchPermissionEntryAllOf & {
-    status: PendingPatchPermissionEntryStatus;
+export type PendingPatchRoleEntry = BasePatchRoleEntry &
+  PendingPatchRoleEntryAllOf & {
+    status: PendingPatchRoleEntryStatus;
   } & Required<
     Pick<
-      BasePatchPermissionEntry &
-        PendingPatchPermissionEntryAllOf & {
-          status: PendingPatchPermissionEntryStatus;
+      BasePatchRoleEntry &
+        PendingPatchRoleEntryAllOf & {
+          status: PendingPatchRoleEntryStatus;
         },
       'status' | 'email' | 'role' | 'created' | 'status'
     >
   >;
 
 /**
- * Represents a permission patch result entry.
+ * Represents a role patch result entry.
 
  */
-export type PatchPermissionResultEntry =
-  | SuccessfulPatchPermissionEntry
-  | FailedPatchPermissionEntry
-  | PendingPatchPermissionEntry;
+export type PatchRoleResultEntry =
+  | SuccessfulPatchRoleEntry
+  | FailedPatchRoleEntry
+  | PendingPatchRoleEntry;
 
-export type PatchAssetPermissionsResponseDirect = {
-  /** Status of each permission addition. */
-  additions?: PatchPermissionResultEntry[];
-  /** Status of each permission update. */
-  updates?: PatchPermissionResultEntry[];
-  /** Status of each permission deletion. */
-  deletions?: PatchPermissionResultEntry[];
+export type PatchAssetRolesResponseDirect = {
+  /** Status of each role addition. */
+  additions?: PatchRoleResultEntry[];
+  /** Status of each role update. */
+  updates?: PatchRoleResultEntry[];
+  /** Status of each role deletion. */
+  deletions?: PatchRoleResultEntry[];
 };
 
-export interface PatchAssetPermissionsResponse {
-  direct: PatchAssetPermissionsResponseDirect;
+export interface PatchAssetRolesResponse {
+  direct: PatchAssetRolesResponseDirect;
 }
+
+export type CopyOperationOptionsAllOf = { [key: string]: unknown };
+
+/**
+ * Optional configuration for controlling common aspects of copy operation. This object allows clients to customize how
+copy operations are executed.
+
+ */
+export type CopyOperationOptions = OperationOptions & CopyOperationOptionsAllOf;
+
+/**
+ * Represents the request body for a copy operation on an asset.
+
+ */
+export interface CopyRequest {
+  /** Asset Id of the target parent container (project/folder). */
+  parentId: AssetId;
+  name?: AssetName;
+  options?: CopyOperationOptions;
+}
+
+/**
+ * A globally unique identifier for the asynchronous job
+ */
+export type JobId = string;
+
+export type MoveOperationOptionsAllOf = { [key: string]: unknown };
+
+/**
+ * Optional configuration for controlling common aspects of move operation. This object allows clients to customize how
+move operations are executed.
+
+ */
+export type MoveOperationOptions = OperationOptions & MoveOperationOptionsAllOf;
+
+/**
+ * Represents the request body for a move operation on an asset.
+
+ */
+export interface MoveRequest {
+  /** Asset Id of the target parent container (project/folder). */
+  parentId: AssetId;
+  name?: AssetName;
+  options?: MoveOperationOptions;
+}
+
+/**
+ * The permissions for the user applicable to non-project type of asset
+ */
+export interface CommonNonProjectPermissions {
+  /** Whether the user can edit the asset */
+  can_edit_assets: boolean;
+  /** Whether the user can view the asset */
+  can_view_assets: boolean;
+  /** Whether the user can restore the asset */
+  can_restore_assets: boolean;
+  /** Whether the user can soft delete the asset */
+  can_delete_assets: boolean;
+  /** Whether the user can permanently delete the asset */
+  can_permanent_delete_assets: boolean;
+}
+
+/**
+ * The permissions for the user on a folder
+ */
+export type FolderPermissions = CommonPermissions &
+  ContainerOnlyPermissions &
+  CommonNonProjectPermissions;
+
+/**
+ * The permissions for the user on a file
+ */
+export type FilePermissions = CommonPermissions & CommonNonProjectPermissions;
 
 /**
  * A URL for the asset
@@ -621,7 +766,7 @@ export type Url = string;
 /**
  * A pre-signed download URL for the asset
  */
-export interface FileDownloadUrl {
+export interface FileDownloadOKResponse {
   /** The pre-signed URL that supports HTTP range requests for partial downloads */
   url?: Url;
   /** The expiration date of the pre-signed URL */
@@ -642,18 +787,6 @@ export interface FileDownloadUrl {
 export type FileSize = number;
 
 /**
- * A globally unique identifier for the asynchronous job
- */
-export type JobId = string;
-
-/**
- * An identifier provided by the client to identify the request.
- * @minLength 1
- * @maxLength 128
- */
-export type RequestId = string;
-
-/**
  * Contains the common properties for all asynchronous jobs in the system.  
 
 ---
@@ -668,9 +801,12 @@ export interface BaseJobStatus {
   /** The type of the asynchronous job, depends on the original API invocation that created the job.  
 Currently, the following job types are supported:
 - file_upload
-- copy_asset
-- move_asset
-- package_asset
+- file_download
+- file_copy
+- file_move
+- folder_copy
+- folder_move
+- project_package
 
 ---
 > NOTE:  
@@ -737,30 +873,30 @@ export type FileUploadSucceededJobStatus = BaseJobStatus &
     >
   >;
 
-export type PackageAssetSucceededJobStatusAllOf = {
+export type ProjectPackageSucceededJobStatusAllOf = {
   status?: string;
   assets?: Asset[];
 };
 
-export type PackageAssetSucceededJobStatusJobType =
-  (typeof PackageAssetSucceededJobStatusJobType)[keyof typeof PackageAssetSucceededJobStatusJobType];
+export type ProjectPackageSucceededJobStatusJobType =
+  (typeof ProjectPackageSucceededJobStatusJobType)[keyof typeof ProjectPackageSucceededJobStatusJobType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PackageAssetSucceededJobStatusJobType = {
-  package_asset: 'package_asset',
+export const ProjectPackageSucceededJobStatusJobType = {
+  project_package: 'project_package',
 } as const;
 
 /**
- * Represents the status of a package asset succeeded asynchronous job in the system
+ * Represents the status of a project package succeeded asynchronous job in the system
  */
-export type PackageAssetSucceededJobStatus = BaseJobStatus &
-  PackageAssetSucceededJobStatusAllOf & {
-    jobType: PackageAssetSucceededJobStatusJobType;
+export type ProjectPackageSucceededJobStatus = BaseJobStatus &
+  ProjectPackageSucceededJobStatusAllOf & {
+    jobType: ProjectPackageSucceededJobStatusJobType;
   } & Required<
     Pick<
       BaseJobStatus &
-        PackageAssetSucceededJobStatusAllOf & {
-          jobType: PackageAssetSucceededJobStatusJobType;
+        ProjectPackageSucceededJobStatusAllOf & {
+          jobType: ProjectPackageSucceededJobStatusJobType;
         },
       'assets' | 'status'
     >
@@ -768,7 +904,7 @@ export type PackageAssetSucceededJobStatus = BaseJobStatus &
 
 export type FileDownloadSucceededJobStatusAllOf = {
   status?: string;
-  downloadUrl?: FileDownloadUrl;
+  downloadResponse?: FileDownloadOKResponse;
 };
 
 export type FileDownloadSucceededJobStatusJobType =
@@ -791,7 +927,123 @@ export type FileDownloadSucceededJobStatus = BaseJobStatus &
         FileDownloadSucceededJobStatusAllOf & {
           jobType: FileDownloadSucceededJobStatusJobType;
         },
-      'downloadUrl' | 'status'
+      'downloadResponse' | 'status'
+    >
+  >;
+
+export type FileCopySucceededJobStatusAllOf = {
+  status?: string;
+  asset?: FileAsset;
+};
+
+export type FileCopySucceededJobStatusJobType =
+  (typeof FileCopySucceededJobStatusJobType)[keyof typeof FileCopySucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FileCopySucceededJobStatusJobType = {
+  file_copy: 'file_copy',
+} as const;
+
+/**
+ * Represents the status of a file copy succeeded asynchronous job in the system
+ */
+export type FileCopySucceededJobStatus = BaseJobStatus &
+  FileCopySucceededJobStatusAllOf & {
+    jobType: FileCopySucceededJobStatusJobType;
+  } & Required<
+    Pick<
+      BaseJobStatus &
+        FileCopySucceededJobStatusAllOf & {
+          jobType: FileCopySucceededJobStatusJobType;
+        },
+      'asset' | 'status'
+    >
+  >;
+
+export type FileMoveSucceededJobStatusAllOf = {
+  status?: string;
+  asset?: FileAsset;
+};
+
+export type FileMoveSucceededJobStatusJobType =
+  (typeof FileMoveSucceededJobStatusJobType)[keyof typeof FileMoveSucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FileMoveSucceededJobStatusJobType = {
+  file_move: 'file_move',
+} as const;
+
+/**
+ * Represents the status of a file move succeeded asynchronous job in the system
+ */
+export type FileMoveSucceededJobStatus = BaseJobStatus &
+  FileMoveSucceededJobStatusAllOf & {
+    jobType: FileMoveSucceededJobStatusJobType;
+  } & Required<
+    Pick<
+      BaseJobStatus &
+        FileMoveSucceededJobStatusAllOf & {
+          jobType: FileMoveSucceededJobStatusJobType;
+        },
+      'asset' | 'status'
+    >
+  >;
+
+export type FolderCopySucceededJobStatusAllOf = {
+  status?: string;
+  asset?: FolderAsset;
+};
+
+export type FolderCopySucceededJobStatusJobType =
+  (typeof FolderCopySucceededJobStatusJobType)[keyof typeof FolderCopySucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FolderCopySucceededJobStatusJobType = {
+  folder_copy: 'folder_copy',
+} as const;
+
+/**
+ * Represents the status of a folder copy succeeded asynchronous job in the system
+ */
+export type FolderCopySucceededJobStatus = BaseJobStatus &
+  FolderCopySucceededJobStatusAllOf & {
+    jobType: FolderCopySucceededJobStatusJobType;
+  } & Required<
+    Pick<
+      BaseJobStatus &
+        FolderCopySucceededJobStatusAllOf & {
+          jobType: FolderCopySucceededJobStatusJobType;
+        },
+      'asset' | 'status'
+    >
+  >;
+
+export type FolderMoveSucceededJobStatusAllOf = {
+  status?: string;
+  asset?: FolderAsset;
+};
+
+export type FolderMoveSucceededJobStatusJobType =
+  (typeof FolderMoveSucceededJobStatusJobType)[keyof typeof FolderMoveSucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FolderMoveSucceededJobStatusJobType = {
+  folder_move: 'folder_move',
+} as const;
+
+/**
+ * Represents the status of a folder move succeeded asynchronous job in the system
+ */
+export type FolderMoveSucceededJobStatus = BaseJobStatus &
+  FolderMoveSucceededJobStatusAllOf & {
+    jobType: FolderMoveSucceededJobStatusJobType;
+  } & Required<
+    Pick<
+      BaseJobStatus &
+        FolderMoveSucceededJobStatusAllOf & {
+          jobType: FolderMoveSucceededJobStatusJobType;
+        },
+      'asset' | 'status'
     >
   >;
 
@@ -811,11 +1063,114 @@ export type SucceededJobStatus =
   | (FileUploadSucceededJobStatus & {
       status: SucceededJobStatusStatus;
     })
-  | (PackageAssetSucceededJobStatus & {
+  | (ProjectPackageSucceededJobStatus & {
       status: SucceededJobStatusStatus;
     })
   | (FileDownloadSucceededJobStatus & {
       status: SucceededJobStatusStatus;
+    })
+  | (FileCopySucceededJobStatus & {
+      status: SucceededJobStatusStatus;
+    })
+  | (FileMoveSucceededJobStatus & {
+      status: SucceededJobStatusStatus;
+    })
+  | (FolderCopySucceededJobStatus & {
+      status: SucceededJobStatusStatus;
+    })
+  | (FolderMoveSucceededJobStatus & {
+      status: SucceededJobStatusStatus;
+    });
+
+export type FolderCopyPartiallySucceededJobStatusAllOfErrorsItemAllOfAsset = {
+  readonly assetId: AssetId;
+  /** Human-readable name of the asset */
+  name: string;
+  assetType: AssetTypeEnums;
+};
+
+export type FolderCopyPartiallySucceededJobStatusAllOfErrorsItemAllOf = {
+  asset?: FolderCopyPartiallySucceededJobStatusAllOfErrorsItemAllOfAsset;
+};
+
+export type FolderCopyPartiallySucceededJobStatusAllOfErrorsItem = ErrorResponse &
+  FolderCopyPartiallySucceededJobStatusAllOfErrorsItemAllOf &
+  Required<
+    Pick<ErrorResponse & FolderCopyPartiallySucceededJobStatusAllOfErrorsItemAllOf, 'asset'>
+  >;
+
+export type FolderCopyPartiallySucceededJobStatusAllOf = {
+  status: string;
+  asset: FolderAsset;
+  /** The errors that occurred during the job */
+  errors: FolderCopyPartiallySucceededJobStatusAllOfErrorsItem[];
+};
+
+export type FolderCopyPartiallySucceededJobStatusJobType =
+  (typeof FolderCopyPartiallySucceededJobStatusJobType)[keyof typeof FolderCopyPartiallySucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const FolderCopyPartiallySucceededJobStatusJobType = {
+  folder_copy: 'folder_copy',
+} as const;
+
+/**
+ * Represents the status of a folder copy partially succeeded asynchronous job in the system
+ */
+export type FolderCopyPartiallySucceededJobStatus = BaseJobStatus &
+  FolderCopyPartiallySucceededJobStatusAllOf & {
+    jobType: FolderCopyPartiallySucceededJobStatusJobType;
+  };
+
+export type ProjectPackagePartiallySucceededJobStatusAllOf = {
+  status?: string;
+  assets?: Asset[];
+  /** The errors that occurred during the job */
+  errors?: ErrorResponse[];
+};
+
+export type ProjectPackagePartiallySucceededJobStatusJobType =
+  (typeof ProjectPackagePartiallySucceededJobStatusJobType)[keyof typeof ProjectPackagePartiallySucceededJobStatusJobType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ProjectPackagePartiallySucceededJobStatusJobType = {
+  project_package: 'project_package',
+} as const;
+
+/**
+ * Represents the status of a project package partially succeeded asynchronous job in the system
+ */
+export type ProjectPackagePartiallySucceededJobStatus = BaseJobStatus &
+  ProjectPackagePartiallySucceededJobStatusAllOf & {
+    jobType: ProjectPackagePartiallySucceededJobStatusJobType;
+  } & Required<
+    Pick<
+      BaseJobStatus &
+        ProjectPackagePartiallySucceededJobStatusAllOf & {
+          jobType: ProjectPackagePartiallySucceededJobStatusJobType;
+        },
+      'assets' | 'status' | 'errors'
+    >
+  >;
+
+export type PartiallySucceededJobStatusStatus =
+  (typeof PartiallySucceededJobStatusStatus)[keyof typeof PartiallySucceededJobStatusStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PartiallySucceededJobStatusStatus = {
+  partially_succeeded: 'partially_succeeded',
+} as const;
+
+/**
+ * Represents the status of a partially succeeded asynchronous job in the system
+
+ */
+export type PartiallySucceededJobStatus =
+  | (FolderCopyPartiallySucceededJobStatus & {
+      status: PartiallySucceededJobStatusStatus;
+    })
+  | (ProjectPackagePartiallySucceededJobStatus & {
+      status: PartiallySucceededJobStatusStatus;
     });
 
 export type FailedJobStatusAllOf = {
@@ -851,7 +1206,11 @@ export type FailedJobStatus = BaseJobStatus &
 /**
  * Represents the status of a job in the system.
  */
-export type JobStatus = RunningJobStatus | SucceededJobStatus | FailedJobStatus;
+export type JobStatus =
+  | RunningJobStatus
+  | SucceededJobStatus
+  | PartiallySucceededJobStatus
+  | FailedJobStatus;
 
 /**
  * **Success** - Paginated response containing an array of project assets with basic information about the project
@@ -940,6 +1299,18 @@ export type AccessErrorResponseResponse = ErrorResponse;
 export type ResourceNotFoundResponseResponse = ErrorResponse;
 
 /**
+ * **Precondition Failed** - The request failed due to a precondition
+
+ */
+export type PreconditionFailedResponseResponse = ErrorResponse;
+
+/**
+ * **Insufficient Storage** - The request cannot be processed because the storage quota has been exceeded
+
+ */
+export type StorageQuotaExceededResponseResponse = ErrorResponse;
+
+/**
  * **Success** - Paginated response containing an array of object with each element containing basic information about the project,
 along with paging information.
 
@@ -947,25 +1318,27 @@ along with paging information.
 export type PaginatedAssetsResponseResponse = PaginatedAssets;
 
 /**
- * The effective permission for the user
+ * The effective permission for the user for a project asset
  */
-export type AssetPermissionResponseResponse = {
+export type ProjectPermissionResponseResponse = {
+  /** @deprecated */
   role?: RoleEnums;
+  permissions: ProjectPermissions;
 };
 
 /**
- * **Success** - A list of collaborators and their permissions for the asset
+ * **Success** - A list of collaborators and their roles for the asset
 
  */
-export type N200GetAssetPermissionsResponse = AssetPermissionsResponse;
+export type GetAssetRolesResponseResponse = AssetRolesResponse;
 
 /**
  * **Success/Partial Success**  
-Patching the permissions was tried and from the response body result of each request can be
+Patching the roles was tried and from the response body result of each request can be
 determined based on the status.
 
  */
-export type N200PatchAssetPermissionsResponse = PatchAssetPermissionsResponse;
+export type PatchAssetRolesResponseResponse = PatchAssetRolesResponse;
 
 /**
  * **Forbidden** - The user does not have permission to create folders
@@ -974,10 +1347,48 @@ export type N200PatchAssetPermissionsResponse = PatchAssetPermissionsResponse;
 export type AccessErrorFolderCreateResponseResponse = ErrorResponse;
 
 /**
+ * The effective permission for the user for a folder asset
+ */
+export type FolderPermissionResponseResponse = {
+  /** @deprecated */
+  role?: RoleEnums;
+  permissions: FolderPermissions;
+};
+
+/**
+ * The effective permission for the user for a file asset
+ */
+export type FilePermissionResponseResponse = {
+  /** @deprecated */
+  role?: RoleEnums;
+  permissions: FilePermissions;
+};
+
+/**
+ * Asynchronous job id used to call the status endpoint.
+ */
+export type FileCopyAcceptedResponseResponse = {
+  jobId?: JobId;
+};
+
+/**
+ * Asynchronous job id used to call the status endpoint.
+ */
+export type FileMoveAcceptedResponseResponse = {
+  jobId?: JobId;
+};
+
+/**
+ * **Unsupported Media Type** - Content type cannot be changed from original file type.
+
+ */
+export type ContentTypeChangeNotAllowedResponseResponse = ErrorResponse;
+
+/**
  * **Success** - A pre-signed download URL for the asset
 
  */
-export type FileDownloadUrlResponseResponse = FileDownloadUrl;
+export type FileDownloadOKResponseResponse = FileDownloadOKResponse;
 
 /**
  * Asynchronous job id used to call the status endpoint.
@@ -986,12 +1397,6 @@ export type FileDownloadAcceptedResponseResponse = {
   /** The asynchronous job id */
   jobId?: string;
 };
-
-/**
- * **Precondition Failed** - The request failed due to a precondition
-
- */
-export type PreconditionFailedResponseResponse = ErrorResponse;
 
 /**
  * The pre-signed URL pointing to the storage location for the block along with the part number
@@ -1029,9 +1434,18 @@ export type FileUploadFinalizeResponseResponse = {
  */
 export type ProjectCreateRequestBody = {
   name: AssetName;
+  options?: OperationOptions;
 };
 
-export type PatchAssetPermissionsBody = PatchAssetPermissionsRequest;
+/**
+ * Represents a request body for renaming a project.
+ */
+export type ProjectRenameRequestBody = {
+  name: AssetName;
+  options?: OperationOptions;
+};
+
+export type PatchAssetRolesBody = PatchAssetRolesRequest;
 
 /**
  * Represents a request body for creating a folder.  
@@ -1050,7 +1464,30 @@ export type FolderCreateRequestBody = {
   parentId: AssetId;
   name?: AssetName;
   path?: Path;
+  options?: OperationOptions;
 };
+
+/**
+ * Represents a request body for renaming a folder.
+
+ */
+export type FolderRenameRequestBody = {
+  name: AssetName;
+  options?: OperationOptions;
+};
+
+/**
+ * Represents a request body for renaming a file.
+
+ */
+export type FileRenameRequestBody = {
+  name: AssetName;
+  options?: OperationOptions;
+};
+
+export type FileCopyRequestBody = CopyRequest;
+
+export type FileMoveRequestBody = MoveRequest;
 
 /**
  * This request body is used to initialize a block based file upload job.
@@ -1065,6 +1502,7 @@ export type FileUploadInitRequestBody = {
   mediaType: string;
   /** The size of each block in bytes. The block size returned may differ from the size requested. */
   blockSize?: number;
+  options?: OperationOptions;
 };
 
 /**
@@ -1079,6 +1517,19 @@ export type FileUploadFinalizeRequestBody = {
    * @minItems 1
    */
   usedTransferLinks: number[];
+};
+
+/**
+ * This request body is used to initialize a block based file replacement upload job.
+
+ */
+export type FileReplaceInitRequestBody = {
+  size: FileSize;
+  /** The MIME type of the file */
+  mediaType: string;
+  /** The size of each block in bytes. The block size returned may differ from the size requested. */
+  blockSize?: number;
+  options?: OperationOptions;
 };
 
 /**
@@ -1119,28 +1570,37 @@ Following fields are supported for sorting:
 export type ProjectsSortByParameter = string;
 
 /**
- * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string  
+ * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string
 
 Following fields are supported for filtering:
-  - `view`: Filters the results to only a specific view. The possible values are `yours`, `all`, `shared_with_you`,
-   `discoverable`.
-     Here is how each view works:
-     - `Yours`:
-        - Projects in the calling user's User Home storage
-        - Projects in the calling user's Org's ESM shared storage for which the user has **write access** through
-         membership in the _everybody group.
-     - `Shared with you`:
-        - Projects in other user's User Home storage for which the calling user has permissions
-        - Projects in other Org's ESM shared storage for which the calling user has permissions
-     - `All`:
-        - Combination of Projects returned from `Yours` and `Shared with you`
-    - `Discoverable`:
-       - Projects returned from `All` view
-       - Projects in the calling user's Org's ESM shared storage for which the user has **read access** through
+  - `view`: (**deprecated**) Filters the results to only a specific view (operators allowed are `==`). Single value is only supported.
+    The possible values are `yours`, `all`, `shared_with_you`, `discoverable`.
+    Here is how each view works:
+    - `Yours`:
+      - Projects in the calling user's User Home storage
+      - Projects in the calling user's Org's ESM shared storage for which the user has **write access** through
         membership in the _everybody group.
+    - `Shared with you`:
+      - Projects in other user's User Home storage for which the calling user has permissions
+      - Projects in other Org's ESM shared storage for which the calling user has permissions
+    - `All`:
+      - Combination of Projects returned from `Yours` and `Shared with you`
+    - `Discoverable`:
+      - Projects returned from `All` view
+      - Projects in the calling user's Org's ESM shared storage for which the user has **read access** through
+        membership in the _everybody group.
+  - `state`: Filter by project state (operators allowed are ==). Single value is only supported.
+    - `active` (default): Filter by active projects.
+    - `deleted`: Filter by (soft)deleted projects.
+  - `state`: Filter by asset state (operators allowed are `==`). Single value is only supported.
+      - `active` (default): Filter by active assets.
+      - `deleted`: Filter by (soft)deleted assets.
 
+  - `createdBy`: Filter by project creator (operators allowed are `==` and `!=`). Single value is only supported.
+     - `current_user` is a predefined constant representing the user initiating the request. Currently, this is the sole supported value.
 ---
 > NOTE:  
+> * The `view` parameter is deprecated and will be removed in a future release. Clients should use the `createdBy` parameter instead.
 > * Only applicable for the first page. Subsequent pages must use the cursor.
 ---
 
@@ -1155,12 +1615,13 @@ It can be used to correlate logs and other resources and is intended to be a non
 export type RequestIdParameter = string;
 
 /**
- * One or more ETag values to compare, separated by commas.  
-The request will succeed only if the resource's current ETag does **not** match any of the provided values.
-This allows clients to avoid unnecessary data transfer if the resource has not changed since their last fetch.
+ * Permanent used for indicating the mode of delete operation.
+* If true, the operation will do a permanent delete.
+* If false, the operation will do a soft delete.
+* If not provided, the default value is false.
 
  */
-export type IfNoneMatchParameter = string;
+export type PermanentParameter = boolean;
 
 /**
  * Defines the sort order.  
@@ -1184,8 +1645,11 @@ export type AssetsSortByParameter = string;
  * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string
 
 Following fields are supported for filtering:
-  - `mediaType`: Filter by media type (operators allowed are ==). Single value is only supported.
-  - `assetType`: Filter by asset type (operators allowed are ==). Single value is only supported.
+  - `mediaType`: Filter by media type (operators allowed are `==` and `=in=`). Multiple values are supported.
+  - `assetType`: Filter by asset type (operators allowed are `==`). Single value is only supported.
+  - `state`: Filter by asset state (operators allowed are `==`). Single value is only supported.
+      - `active` (default): Filter by active assets.
+      - `deleted`: Filter by (soft)deleted assets.
 
 ---
 > NOTE:  
@@ -1205,14 +1669,6 @@ export type AssetsFilterParameter = string;
 
  */
 export type UrlTTLParameter = number;
-
-/**
- * One or more ETag values to compare, separated by commas.
-The request will succeed only if the resource's current ETag matches any of the provided values.
-This allows clients to prevent resource conflicts when multiple clients try to update the same resource simultaneously.
-
- */
-export type IfMatchParameter = string;
 
 /**
  * The desired dimension of the resulting rendition on the longest side, whether that is width or height.
@@ -1264,28 +1720,37 @@ Following fields are supported for sorting:
  */
   sortBy?: ProjectsSortByParameter;
   /**
- * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string  
+ * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string
 
 Following fields are supported for filtering:
-  - `view`: Filters the results to only a specific view. The possible values are `yours`, `all`, `shared_with_you`,
-   `discoverable`.
-     Here is how each view works:
-     - `Yours`:
-        - Projects in the calling user's User Home storage
-        - Projects in the calling user's Org's ESM shared storage for which the user has **write access** through
-         membership in the _everybody group.
-     - `Shared with you`:
-        - Projects in other user's User Home storage for which the calling user has permissions
-        - Projects in other Org's ESM shared storage for which the calling user has permissions
-     - `All`:
-        - Combination of Projects returned from `Yours` and `Shared with you`
-    - `Discoverable`:
-       - Projects returned from `All` view
-       - Projects in the calling user's Org's ESM shared storage for which the user has **read access** through
+  - `view`: (**deprecated**) Filters the results to only a specific view (operators allowed are `==`). Single value is only supported.
+    The possible values are `yours`, `all`, `shared_with_you`, `discoverable`.
+    Here is how each view works:
+    - `Yours`:
+      - Projects in the calling user's User Home storage
+      - Projects in the calling user's Org's ESM shared storage for which the user has **write access** through
         membership in the _everybody group.
+    - `Shared with you`:
+      - Projects in other user's User Home storage for which the calling user has permissions
+      - Projects in other Org's ESM shared storage for which the calling user has permissions
+    - `All`:
+      - Combination of Projects returned from `Yours` and `Shared with you`
+    - `Discoverable`:
+      - Projects returned from `All` view
+      - Projects in the calling user's Org's ESM shared storage for which the user has **read access** through
+        membership in the _everybody group.
+  - `state`: Filter by project state (operators allowed are ==). Single value is only supported.
+    - `active` (default): Filter by active projects.
+    - `deleted`: Filter by (soft)deleted projects.
+  - `state`: Filter by asset state (operators allowed are `==`). Single value is only supported.
+      - `active` (default): Filter by active assets.
+      - `deleted`: Filter by (soft)deleted assets.
 
+  - `createdBy`: Filter by project creator (operators allowed are `==` and `!=`). Single value is only supported.
+     - `current_user` is a predefined constant representing the user initiating the request. Currently, this is the sole supported value.
 ---
 > NOTE:  
+> * The `view` parameter is deprecated and will be removed in a future release. Clients should use the `createdBy` parameter instead.
 > * Only applicable for the first page. Subsequent pages must use the cursor.
 ---
 
@@ -1296,7 +1761,24 @@ Following fields are supported for filtering:
 export type GetProjectPathParameters = {
   assetId: string;
 };
-export type DiscardProjectPathParameters = {
+export type DeleteProjectPathParameters = {
+  assetId: string;
+};
+export type DeleteProjectParams = {
+  /**
+ * Permanent used for indicating the mode of delete operation.
+* If true, the operation will do a permanent delete.
+* If false, the operation will do a soft delete.
+* If not provided, the default value is false.
+
+ */
+  permanent?: PermanentParameter;
+};
+
+export type RenameProjectPathParameters = {
+  assetId: string;
+};
+export type RestoreProjectPathParameters = {
   assetId: string;
 };
 export type GetProjectChildrenPathParameters = {
@@ -1344,8 +1826,11 @@ export type GetProjectChildrenParams = {
  * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string
 
 Following fields are supported for filtering:
-  - `mediaType`: Filter by media type (operators allowed are ==). Single value is only supported.
-  - `assetType`: Filter by asset type (operators allowed are ==). Single value is only supported.
+  - `mediaType`: Filter by media type (operators allowed are `==` and `=in=`). Multiple values are supported.
+  - `assetType`: Filter by asset type (operators allowed are `==`). Single value is only supported.
+  - `state`: Filter by asset state (operators allowed are `==`). Single value is only supported.
+      - `active` (default): Filter by active assets.
+      - `deleted`: Filter by (soft)deleted assets.
 
 ---
 > NOTE:  
@@ -1365,7 +1850,33 @@ export type GetProjectPermissionsPathParameters = {
 export type PatchProjectPermissionsPathParameters = {
   assetId: string;
 };
+export type GetProjectRolesPathParameters = {
+  assetId: string;
+};
+export type PatchProjectRolesPathParameters = {
+  assetId: string;
+};
 export type GetFolderPathParameters = {
+  assetId: string;
+};
+export type DeleteFolderPathParameters = {
+  assetId: string;
+};
+export type DeleteFolderParams = {
+  /**
+ * Permanent used for indicating the mode of delete operation.
+* If true, the operation will do a permanent delete.
+* If false, the operation will do a soft delete.
+* If not provided, the default value is false.
+
+ */
+  permanent?: PermanentParameter;
+};
+
+export type RenameFolderPathParameters = {
+  assetId: string;
+};
+export type RestoreFolderPathParameters = {
   assetId: string;
 };
 export type GetFolderChildrenPathParameters = {
@@ -1413,8 +1924,11 @@ export type GetFolderChildrenParams = {
  * [FIQL-based](https://datatracker.ietf.org/doc/html/draft-nottingham-atompub-fiql-00) filter string
 
 Following fields are supported for filtering:
-  - `mediaType`: Filter by media type (operators allowed are ==). Single value is only supported.
-  - `assetType`: Filter by asset type (operators allowed are ==). Single value is only supported.
+  - `mediaType`: Filter by media type (operators allowed are `==` and `=in=`). Multiple values are supported.
+  - `assetType`: Filter by asset type (operators allowed are `==`). Single value is only supported.
+  - `state`: Filter by asset state (operators allowed are `==`). Single value is only supported.
+      - `active` (default): Filter by active assets.
+      - `deleted`: Filter by (soft)deleted assets.
 
 ---
 > NOTE:  
@@ -1428,13 +1942,48 @@ Following fields are supported for filtering:
 export type GetFolderEffectivePermissionPathParameters = {
   assetId: string;
 };
-export type GetFolderPermissionsPathParameters = {
-  assetId: string;
-};
 export type GetFilePathParameters = {
   assetId: string;
 };
+export type DeleteFilePathParameters = {
+  assetId: string;
+};
+export type DeleteFileParams = {
+  /**
+ * Permanent used for indicating the mode of delete operation.
+* If true, the operation will do a permanent delete.
+* If false, the operation will do a soft delete.
+* If not provided, the default value is false.
+
+ */
+  permanent?: PermanentParameter;
+};
+
+export type RenameFilePathParameters = {
+  assetId: string;
+};
+export type RestoreFilePathParameters = {
+  assetId: string;
+};
 export type GetFileEffectivePermissionPathParameters = {
+  assetId: string;
+};
+export type GetFilePermissionsPathParameters = {
+  assetId: string;
+};
+export type PatchFilePermissionsPathParameters = {
+  assetId: string;
+};
+export type GetFileRolesPathParameters = {
+  assetId: string;
+};
+export type PatchFileRolesPathParameters = {
+  assetId: string;
+};
+export type CopyFilePathParameters = {
+  assetId: string;
+};
+export type MoveFilePathParameters = {
   assetId: string;
 };
 export type DownloadFilePathParameters = {
@@ -1473,6 +2022,12 @@ export type GetFileImageRenditionParams = {
   mediaType?: MediaTypeParameter;
 };
 
+export type InitBlockBasedFileReplacementPathParameters = {
+  assetId: string;
+};
+export type FinalizeBlockBasedFileReplacementPathParameters = {
+  assetId: string;
+};
 export type GetJobStatusPathParameters = {
   jobId: JobId;
 };
