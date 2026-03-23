@@ -1,6 +1,6 @@
 {
   "name": "@musallam/dynamic-graphics-render-client",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "⚠️ DEPRECATED - Use @musallam/audio-video-client instead. TypeScript client library for Adobe Dynamic Graphics Render API",
   "deprecated": "This package is deprecated. Please use @musallam/audio-video-client instead, which provides the same functionality with additional features.",
   "type": "module",

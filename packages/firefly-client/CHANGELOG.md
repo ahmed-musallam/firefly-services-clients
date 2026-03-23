@@ -1,3 +1,17 @@
+# 5.0.0 (2026-03-23)
+
+### 🚀 Features
+
+- ⚠️ single client and add new object composite endpoints ([282195d](https://github.com/ahmed-musallam/firefly-services-clients/commit/282195d))
+
+### ⚠️ Breaking Changes
+
+- single client for all endpoints ([282195d](https://github.com/ahmed-musallam/firefly-services-clients/commit/282195d))
+
+### 🧱 Updated Dependencies
+
+- Updated @musallam/ims-client to 4.3.1
+
 ## 4.3.0 (2026-02-25)
 
 ### 🧱 Updated Dependencies

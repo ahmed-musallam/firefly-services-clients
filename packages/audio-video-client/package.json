@@ -1,6 +1,6 @@
 {
   "name": "@musallam/audio-video-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "TypeScript client library for Adobe Audio and Video API",
   "type": "module",
   "types": "./dist/index.d.ts",
