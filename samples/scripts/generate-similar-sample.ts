@@ -4,12 +4,7 @@
  */
 
 import 'dotenv/config';
-import {
-  IMSClient,
-  GenerateSimilarClient,
-  UploadImageClient,
-  pollGenerateSimilarJob,
-} from '@musallam/firefly-client';
+import { IMSClient, FireflyApiClient, pollGenerateSimilarJob } from '@musallam/firefly-client';
 import { readFileSync } from 'fs';
 
 async function main() {
@@ -30,7 +25,7 @@ async function main() {
   const imageBuffer = readFileSync(fileRelativePath);
   const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
-  const uploadResult = await UploadImageClient.storageImageV2(imageBlob, {
+  const uploadResult = await FireflyApiClient.storageImageV2(imageBlob, {
     headers: {
       ...authHeaders,
       'Content-Type': 'image/jpeg',
@@ -40,7 +35,7 @@ async function main() {
   console.log(`✓ Upload complete: ${uploadResult.images?.[0]?.id}`);
 
   console.log('\n🖼️  Starting similar image generation...');
-  const job = await GenerateSimilarClient.generateSimilarImagesV3Async(
+  const job = await FireflyApiClient.generateSimilarImagesV3Async(
     {
       image: {
         source: {

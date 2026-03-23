@@ -5,9 +5,8 @@
 
 import 'dotenv/config';
 import {
-  GenerateObjectCompositeClient,
+  FireflyApiClient,
   pollGenerateObjectCompositeJob,
-  UploadImageClient,
   IMSClient,
 } from '@musallam/firefly-client';
 import { readFileSync } from 'fs';
@@ -31,7 +30,7 @@ async function main() {
   const imageBuffer = readFileSync(backgroundImageUrl);
   const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
-  const uploadResult = await UploadImageClient.storageImageV2(imageBlob, {
+  const uploadResult = await FireflyApiClient.storageImageV2(imageBlob, {
     headers: authHeaders,
   });
 
@@ -39,7 +38,7 @@ async function main() {
   console.log(`   Background: ${backgroundImageUrl}`);
   console.log(`   Object: "a red sports car"`);
 
-  const job = await GenerateObjectCompositeClient.generateObjectCompositeV3Async(
+  const job = await FireflyApiClient.generateObjectCompositeV3Async(
     {
       prompt: 'a red sports car',
       image: {
@@ -53,11 +52,11 @@ async function main() {
       },
       placement: {
         alignment: {
-          horizontal: GenerateObjectCompositeClient.AlignmentHorizontal.center,
-          vertical: GenerateObjectCompositeClient.AlignmentVertical.center,
+          horizontal: FireflyApiClient.AlignmentHorizontal.center,
+          vertical: FireflyApiClient.AlignmentVertical.center,
         },
       },
-      contentClass: GenerateObjectCompositeClient.ContentClassV3.photo,
+      contentClass: FireflyApiClient.ContentClassV3.photo,
     },
     { headers: authHeaders }
   );

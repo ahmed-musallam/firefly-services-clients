@@ -1,11 +1,4 @@
-import type {
-  GenerateSimilarClient,
-  ImageGenerationClient,
-  GenerateObjectCompositeClient,
-  GenerateVideoClient,
-  GenerativeExpandClient,
-  GenerativeFillClient,
-} from '..';
+import type { FireflyApiClient } from '..';
 import { FIREFLY_AXIOS_INSTANCE } from '../mutator/custom-firefly-axios-instance';
 import type { AxiosRequestConfig } from 'axios';
 
@@ -153,47 +146,44 @@ export async function pollFireflyJob<TResult>(
 
 export async function pollGenerateSimilarJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<GenerateSimilarClient.GenerateSimilarImagesResponseV3>
-): Promise<GenerateSimilarClient.GenerateSimilarImagesResponseV3> {
-  return pollFireflyJob<GenerateSimilarClient.GenerateSimilarImagesResponseV3>(jobResult, options);
+  options: PollFireflyJobOptions<FireflyApiClient.GenerateSimilarImagesResponseV3>
+): Promise<FireflyApiClient.GenerateSimilarImagesResponseV3> {
+  return pollFireflyJob<FireflyApiClient.GenerateSimilarImagesResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateImagesJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<ImageGenerationClient.GenerateImagesResponseV3>
-): Promise<ImageGenerationClient.GenerateImagesResponseV3> {
-  return pollFireflyJob<ImageGenerationClient.GenerateImagesResponseV3>(jobResult, options);
+  options: PollFireflyJobOptions<FireflyApiClient.GenerateImagesResponseV3>
+): Promise<FireflyApiClient.GenerateImagesResponseV3> {
+  return pollFireflyJob<FireflyApiClient.GenerateImagesResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateObjectCompositeJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<GenerateObjectCompositeClient.GenerateObjectCompositeResponseV3>
-): Promise<GenerateObjectCompositeClient.GenerateObjectCompositeResponseV3> {
-  return pollFireflyJob<GenerateObjectCompositeClient.GenerateObjectCompositeResponseV3>(
-    jobResult,
-    options
-  );
+  options: PollFireflyJobOptions<FireflyApiClient.GenerateObjectCompositeResponseV3>
+): Promise<FireflyApiClient.GenerateObjectCompositeResponseV3> {
+  return pollFireflyJob<FireflyApiClient.GenerateObjectCompositeResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateVideoJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<GenerateVideoClient.AsyncResult>
-): Promise<GenerateVideoClient.AsyncResult> {
-  return pollFireflyJob<GenerateVideoClient.AsyncResult>(jobResult, options);
+  options: PollFireflyJobOptions<FireflyApiClient.AsyncResult>
+): Promise<FireflyApiClient.AsyncResult> {
+  return pollFireflyJob<FireflyApiClient.AsyncResult>(jobResult, options);
 }
 
 export async function pollGenerateExpandJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<GenerativeExpandClient.ExpandImageResponseV3>
-): Promise<GenerativeExpandClient.ExpandImageResponseV3> {
-  return pollFireflyJob<GenerativeExpandClient.ExpandImageResponseV3>(jobResult, options);
+  options: PollFireflyJobOptions<FireflyApiClient.ExpandImageResponseV3>
+): Promise<FireflyApiClient.ExpandImageResponseV3> {
+  return pollFireflyJob<FireflyApiClient.ExpandImageResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateFillJob(
   jobResult: { statusUrl: string },
-  options: PollFireflyJobOptions<GenerativeFillClient.FillImageResponseV3>
-): Promise<GenerativeFillClient.FillImageResponseV3> {
-  return pollFireflyJob<GenerativeFillClient.FillImageResponseV3>(jobResult, options);
+  options: PollFireflyJobOptions<FireflyApiClient.FillImageResponseV3>
+): Promise<FireflyApiClient.FillImageResponseV3> {
+  return pollFireflyJob<FireflyApiClient.FillImageResponseV3>(jobResult, options);
 }
 
 /**
