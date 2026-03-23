@@ -46,11 +46,11 @@ npm install @musallam/firefly-client @musallam/photoshop-client @musallam/lightr
 
 #### Firefly API Example
 
-```typescript
-import { ImageGenerationClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
-import { IMSClient } from '@musallam/ims-client';
+The Firefly package exposes a **single client namespace**, `FireflyApiClient`, generated from one OpenAPI spec (`firefly-api.json`). Async jobs return `statusUrl`; use the polling helpers to wait for results.
 
-// Authenticate
+```typescript
+import { FireflyApiClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
+
 const imsClient = new IMSClient({
   clientId: 'YOUR_CLIENT_ID',
   clientSecret: 'YOUR_CLIENT_SECRET',
@@ -59,8 +59,7 @@ const imsClient = new IMSClient({
 
 const authHeaders = await imsClient.getAuthHeaders();
 
-// Generate images
-const job = await ImageGenerationClient.generateImagesV3Async(
+const job = await FireflyApiClient.generateImagesV3Async(
   {
     prompt: 'A majestic lion on a cliff at sunset',
     numVariations: 2,
@@ -68,7 +67,6 @@ const job = await ImageGenerationClient.generateImagesV3Async(
   { headers: authHeaders }
 );
 
-// Poll for results
 const result = await pollGenerateImagesJob(job, {
   axiosRequestConfig: { headers: authHeaders },
 });
@@ -78,6 +76,8 @@ console.log(
   result.outputs.map((o) => o.image.url)
 );
 ```
+
+Other async calls use the same pattern, e.g. `FireflyApiClient.generateObjectCompositeV3Async` with `pollGenerateObjectCompositeJob`, `FireflyApiClient.generateVideoV3` with `pollGenerateVideoJob`. See [packages/firefly-client/README.md](./packages/firefly-client/README.md).
 
 #### Photoshop API Example
 
@@ -258,10 +258,13 @@ console.log('Created project:', newProject.assetId);
 adobe-services-clients/
 ├── packages/
 │   ├── firefly-client/                      # Firefly API client
+│   │   ├── spec/
+│   │   │   └── firefly-api.json             # Single consolidated OpenAPI spec
 │   │   ├── src/
-│   │   │   ├── generated/                   # Auto-generated from OpenAPI specs
+│   │   │   ├── generated/firefly-api-client/# Orval-generated client
+│   │   │   ├── extension/                   # Job polling (pollFireflyJob, etc.)
 │   │   │   ├── mutator/                     # Axios instance customization
-│   │   │   └── index.ts                     # Main exports
+│   │   │   └── index.ts                     # Exports FireflyApiClient + polling + IMS
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── vite.config.ts
@@ -314,9 +317,7 @@ adobe-services-clients/
 │       └── vite.config.ts
 │
 ├── samples/                   # Example usage scripts
-├── spec/                      # OpenAPI specifications
-│   ├── firefly/              # Firefly API specs
-│   └── photoshop/            # Photoshop API specs
+├── spec/                      # Optional shared / legacy OpenAPI specs (see per-package spec/)
 ├── build-scripts/            # Build utilities
 ├── package.json              # Root workspace config
 └── orval.config.ts           # Code generation config
@@ -635,7 +636,7 @@ import {
 ### After (v3.x)
 
 ```typescript
-import { ImageGenerationClient } from '@musallam/firefly-client';
+import { FireflyApiClient } from '@musallam/firefly-client';
 import { PhotoshopClient } from '@musallam/photoshop-client';
 import { LightroomClient } from '@musallam/lightroom-client';
 import { AudioVideoClient } from '@musallam/audio-video-client';
@@ -647,8 +648,24 @@ import { IMSClient } from '@musallam/ims-client';
 
 - Packages are now separate and can be installed independently
 - Import paths have changed to use the new package names
+- **Firefly:** a single **`FireflyApiClient`** namespace replaces separate clients (`ImageGenerationClient`, `CustomModelsClient`, `UploadImageClient`, etc.). Method names are unchanged (e.g. `generateImagesV3Async`, `getCustomModels`, `storageImageV2`).
 - `AXIOS_INSTANCE` is now split into `FIREFLY_AXIOS_INSTANCE`, `PHOTOSHOP_AXIOS_INSTANCE`, `LIGHTROOM_AXIOS_INSTANCE`, `AUDIO_VIDEO_AXIOS_INSTANCE`, and `STORAGE_AXIOS_INSTANCE`
-- All other APIs remain the same
+
+### Firefly client: single spec (breaking)
+
+If you used multiple named clients from `@musallam/firefly-client`, migrate to **`FireflyApiClient`**:
+
+```typescript
+// Before
+import { ImageGenerationClient, CustomModelsClient } from '@musallam/firefly-client';
+
+// After
+import { FireflyApiClient } from '@musallam/firefly-client';
+// FireflyApiClient.generateImagesV3Async(...)
+// FireflyApiClient.getCustomModels(...)
+```
+
+See [packages/firefly-client/README.md](./packages/firefly-client/README.md) for the full API table and polling examples.
 
 ### Migrating from dynamic-graphics-render-client to audio-video-client
 
