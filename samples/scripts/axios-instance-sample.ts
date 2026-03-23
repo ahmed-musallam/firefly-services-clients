@@ -6,7 +6,7 @@
 
 import 'dotenv/config';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
-import { FIREFLY_AXIOS_INSTANCE, ImageGenerationClient } from '@musallam/firefly-client';
+import { FIREFLY_AXIOS_INSTANCE, FireflyApiClient } from '@musallam/firefly-client';
 
 const PORT = 8765; // Uncommon port for testing
 const EXPECTED_PATH = '/v3/images/generate-async';
@@ -146,14 +146,14 @@ async function main() {
     // Make the image generation request
     console.log('📤 Sending image generation request...');
 
-    const job = await ImageGenerationClient.generateImagesV3Async({
+    const job = await FireflyApiClient.generateImagesV3Async({
       prompt: testPrompt,
       numVariations: 2,
       size: {
         width: 2048,
         height: 2048,
       },
-      contentClass: ImageGenerationClient.ContentClassV3.photo,
+      contentClass: FireflyApiClient.ContentClassV3.photo,
     });
 
     console.log('✅ Request completed successfully!');

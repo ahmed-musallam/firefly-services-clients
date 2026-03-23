@@ -5,7 +5,7 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'fs';
-import { UploadImageClient, IMSClient } from '@musallam/firefly-client';
+import { FireflyApiClient, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -31,7 +31,7 @@ async function main() {
     const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
     // Upload the image
-    const job = await UploadImageClient.storageImageV2(imageBlob, {
+    const job = await FireflyApiClient.storageImageV2(imageBlob, {
       headers: authHeaders,
     });
 

@@ -5,7 +5,7 @@
 
 import 'dotenv/config';
 import { IMSClient } from '@musallam/firefly-client';
-import { CustomModelsClient } from '../../packages/firefly-client/src/index';
+import { FireflyApiClient } from '../../packages/firefly-client/src/index';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -21,7 +21,7 @@ async function main() {
   // 2. List custom models
   console.log('\n📋 Fetching custom models...');
 
-  const result = await CustomModelsClient.getCustomModels(
+  const result = await FireflyApiClient.getCustomModels(
     {
       // Optional: Add query parameters
       // limit: 10,

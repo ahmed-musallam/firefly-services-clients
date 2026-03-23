@@ -237,7 +237,7 @@ const html = `<!DOCTYPE html>
         </div>
 
         <div class="packages">
-            <a href="./firefly-client/" class="package-card">
+            <a href="./@musallam/firefly-client/" class="package-card">
                 <h3>Firefly Client <span class="badge">AI</span></h3>
                 <div class="package-name">@musallam/firefly-client</div>
                 <p>
@@ -247,7 +247,7 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./photoshop-client/" class="package-card">
+            <a href="./@musallam/photoshop-client/" class="package-card">
                 <h3>Photoshop Client <span class="badge">Editing</span></h3>
                 <div class="package-name">@musallam/photoshop-client</div>
                 <p>
@@ -267,7 +267,7 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./lightroom-client/" class="package-card">
+            <a href="./@musallam/lightroom-client/" class="package-card">
                 <h3>Lightroom Client <span class="badge">Photo Editing</span></h3>
                 <div class="package-name">@musallam/lightroom-client</div>
                 <p>
@@ -277,7 +277,7 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./audio-video-client/" class="package-card">
+            <a href="./@musallam/audio-video-client/" class="package-card">
                 <h3>Audio and Video Client <span class="badge">Media</span></h3>
                 <div class="package-name">@musallam/audio-video-client</div>
                 <p>
@@ -287,7 +287,7 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./dynamic-graphics-render-client/" class="package-card" style="opacity: 0.6;">
+            <a href="./@musallam/dynamic-graphics-render-client/" class="package-card" style="opacity: 0.6;">
                 <h3>Dynamic Graphics Render Client <span class="badge" style="background: #999;">Deprecated</span></h3>
                 <div class="package-name">@musallam/dynamic-graphics-render-client</div>
                 <p>
@@ -297,7 +297,7 @@ const html = `<!DOCTYPE html>
                 <span class="cta">View Documentation</span>
             </a>
 
-            <a href="./ims-client/" class="package-card">
+            <a href="./@musallam/ims-client/" class="package-card">
                 <h3>IMS Client <span class="badge">Auth</span></h3>
                 <div class="package-name">@musallam/ims-client</div>
                 <p>

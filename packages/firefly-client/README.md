@@ -18,19 +18,119 @@ This package is part of the [firefly-services-clients](https://github.com/ahmed-
 npm install @musallam/firefly-client
 ```
 
-## Quick Start
+## Quick start (recommended)
+
+Use `IMSClient` and pass auth headers on each request (same pattern as the repo samples):
 
 ```typescript
-import { FireflyClient, FIREFLY_AXIOS_INSTANCE, TokenIMSClient } from '@musallam/firefly-client';
+import { FireflyApiClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
 
-// 1. Setup authentication
+const imsClient = new IMSClient({
+  clientId: process.env.ADOBE_CLIENT_ID!,
+  clientSecret: process.env.ADOBE_CLIENT_SECRET!,
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
+});
+
+const authHeaders = await imsClient.getAuthHeaders();
+
+const job = await FireflyApiClient.generateImagesV3Async(
+  { prompt: 'A red bicycle on a cobblestone street at golden hour' },
+  { headers: authHeaders }
+);
+
+const result = await pollGenerateImagesJob(job, {
+  axiosRequestConfig: { headers: authHeaders },
+});
+
+console.log(
+  'Images:',
+  result.outputs.map((o) => o.image.url)
+);
+```
+
+## API surface (`FireflyApiClient`)
+
+All functions are imported as **`FireflyApiClient`** from `@musallam/firefly-client`:
+
+| Area              | Methods                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| **Async image**   | `generateImagesV3Async`, `generateSimilarImagesV3Async`, `expandImagesV3Async`, `fillImagesV3Async` |
+| **Composites**    | `generateObjectCompositeV3Async`, `preciseComposite`, `adaptiveComposite`                           |
+| **Video**         | `generateVideoV3`                                                                                   |
+| **Custom models** | `getCustomModels`                                                                                   |
+| **Upload**        | `storageImageV2` (JPEG body; see spec for content type)                                             |
+| **Job control**   | `jobResultV3`, `cancelJobV4`                                                                        |
+
+Async POSTs return an acceptance payload (e.g. `jobId`, `statusUrl`). Poll using the helpers below.
+
+## Job polling
+
+Async jobs return `{ statusUrl, ... }`. Poll until completion:
+
+```typescript
+import {
+  FireflyApiClient,
+  pollFireflyJob,
+  pollGenerateImagesJob,
+  pollGenerateSimilarJob,
+  pollGenerateObjectCompositeJob,
+  pollGenerateVideoJob,
+  pollGenerateExpandJob,
+  pollGenerateFillJob,
+} from '@musallam/firefly-client';
+
+// Generic — you supply the result type
+const typed = await pollFireflyJob<YourResultType>(job, {
+  axiosRequestConfig: { headers: authHeaders },
+  intervalMs: 2000,
+  maxAttempts: 60,
+  onProgress: (status) => console.log(status.status, status.progress),
+});
+
+// Typed helpers (wrap pollFireflyJob with the right result type)
+await pollGenerateImagesJob(job, { axiosRequestConfig: { headers: authHeaders } });
+await pollGenerateSimilarJob(job, { axiosRequestConfig: { headers: authHeaders } });
+await pollGenerateObjectCompositeJob(job, { axiosRequestConfig: { headers: authHeaders } });
+await pollGenerateVideoJob(job, { axiosRequestConfig: { headers: authHeaders } });
+await pollGenerateExpandJob(job, { axiosRequestConfig: { headers: authHeaders } });
+await pollGenerateFillJob(job, { axiosRequestConfig: { headers: authHeaders } });
+```
+
+## Object composite example
+
+```typescript
+const job = await FireflyApiClient.generateObjectCompositeV3Async(
+  {
+    prompt: 'Your scene description',
+    // ...see GenerateObjectCompositeRequestV3 / BodyGenerateObjectCompositeV3Async in generated types
+  },
+  { headers: authHeaders }
+);
+
+const result = await pollGenerateObjectCompositeJob(job, {
+  axiosRequestConfig: { headers: authHeaders },
+});
+```
+
+## Custom models (sync GET)
+
+```typescript
+const models = await FireflyApiClient.getCustomModels({ limit: 20 }, { headers: authHeaders });
+```
+
+## Alternative: Axios interceptors
+
+If you prefer a global interceptor on `FIREFLY_AXIOS_INSTANCE`:
+
+```typescript
+import { FIREFLY_AXIOS_INSTANCE, FireflyApiClient, TokenIMSClient } from '@musallam/firefly-client';
+
 const imsClient = new TokenIMSClient({
   clientId: 'YOUR_CLIENT_ID',
   clientSecret: 'YOUR_CLIENT_SECRET',
-  scopes: ['openid', 'creative_sdk', 'AdobeID'],
+  scopes: ['openid', 'AdobeID', 'firefly_api', 'ff_apis'],
 });
 
-// 2. Configure axios instance
 FIREFLY_AXIOS_INSTANCE.interceptors.request.use(async (config) => {
   const token = await imsClient.getAccessToken();
   config.headers.Authorization = `Bearer ${token}`;
@@ -38,30 +138,34 @@ FIREFLY_AXIOS_INSTANCE.interceptors.request.use(async (config) => {
   return config;
 });
 
-// 3. Use the client
-const generations = await FireflyClient.getGenerations({
-  limit: 10,
-});
-console.log(generations);
+await FireflyApiClient.getCustomModels();
 ```
 
-## API Coverage
+## Custom Axios / proxy
 
-### Generations
+```typescript
+import { FIREFLY_AXIOS_INSTANCE } from '@musallam/firefly-client';
 
-- `getGenerations()` - List all generations/jobs
-- `createGeneration()` - Trigger a new generation
-- `getGeneration()` - Get generation details
-- `cancelGeneration()` - Cancel a running generation
+FIREFLY_AXIOS_INSTANCE.defaults.baseURL = 'https://your-proxy.example.com';
+FIREFLY_AXIOS_INSTANCE.defaults.timeout = 60000;
+```
 
-### Assets
+## Migrating from older `@musallam/firefly-client` (multiple clients)
 
-- `getAsset()` - Get asset details
-- `downloadAsset()` - Download asset
+Previously, the package exported separate namespaces such as `ImageGenerationClient`, `CustomModelsClient`, etc. **Now everything is under `FireflyApiClient`.**
 
-_...and more! See [API docs](https://ahmed-musallam.github.io/firefly-services-clients/firefly-client/) for the full reference._
+| Before                                             | After                                         |
+| -------------------------------------------------- | --------------------------------------------- |
+| `ImageGenerationClient.generateImagesV3Async(...)` | `FireflyApiClient.generateImagesV3Async(...)` |
+| `CustomModelsClient.getCustomModels(...)`          | `FireflyApiClient.getCustomModels(...)`       |
+| `UploadImageClient.storageImageV2(...)`            | `FireflyApiClient.storageImageV2(...)`        |
 
----
+Polling helpers (`pollGenerateImagesJob`, etc.) still exist; ensure the job object includes `statusUrl` from the async response.
 
-For full documentation, examples, and advanced usage, see:  
-👉 [https://ahmed-musallam.github.io/firefly-services-clients/firefly-client/](https://ahmed-musallam.github.io/firefly-services-clients/firefly-client/)
+## TypeDoc / reference
+
+👉 [Package API docs](https://ahmed-musallam.github.io/firefly-services-clients/firefly-client/) (when published)
+
+## License
+
+MIT

@@ -4,7 +4,7 @@
  */
 
 import 'dotenv/config';
-import { ImageGenerationClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
+import { FireflyApiClient, pollGenerateImagesJob, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -20,7 +20,7 @@ async function main() {
   // 2. Start image generation job
   console.log('\n🎨 Starting image generation...');
 
-  const job = await ImageGenerationClient.generateImagesV3Async(
+  const job = await FireflyApiClient.generateImagesV3Async(
     {
       prompt: 'A majestic lion standing on a cliff at sunset, cinematic lighting, 4k quality',
     },

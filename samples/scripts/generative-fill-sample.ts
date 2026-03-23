@@ -4,7 +4,7 @@
  */
 
 import 'dotenv/config';
-import { GenerativeFillClient, pollGenerateFillJob, IMSClient } from '@musallam/firefly-client';
+import { FireflyApiClient, pollGenerateFillJob, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -28,7 +28,7 @@ async function main() {
   console.log(`   Mask: ${maskImageUrl}`);
   console.log(`   Fill with: "a beautiful flower"`);
 
-  const job = await GenerativeFillClient.fillImagesV3Async(
+  const job = await FireflyApiClient.fillImagesV3Async(
     {
       image: {
         source: {

@@ -5,12 +5,7 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'fs';
-import {
-  GenerativeExpandClient,
-  UploadImageClient,
-  pollGenerateExpandJob,
-  IMSClient,
-} from '@musallam/firefly-client';
+import { FireflyApiClient, pollGenerateExpandJob, IMSClient } from '@musallam/firefly-client';
 
 async function main() {
   // 1. Setup IMS Client for authentication
@@ -33,7 +28,7 @@ async function main() {
   const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
   // Upload the image
-  const uploadResult = await UploadImageClient.storageImageV2(imageBlob, {
+  const uploadResult = await FireflyApiClient.storageImageV2(imageBlob, {
     headers: authHeaders,
   });
 
@@ -45,7 +40,7 @@ async function main() {
   console.log(`   Source: ${imagePath}`);
   console.log(`   Target size: 3000x3000px (expanding from source)`);
 
-  const job = await GenerativeExpandClient.expandImagesV3Async(
+  const job = await FireflyApiClient.expandImagesV3Async(
     {
       image: {
         source: {
