@@ -1,3 +1,9 @@
+## 5.1.0 (2026-03-24)
+
+### 🚀 Features
+
+- return full result object from firefly ([1263f06](https://github.com/ahmed-musallam/firefly-services-clients/commit/1263f06))
+
 # 5.0.0 (2026-03-23)
 
 ### 🚀 Features
