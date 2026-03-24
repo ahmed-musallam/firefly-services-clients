@@ -44,7 +44,7 @@ const result = await pollGenerateImagesJob(job, {
 
 console.log(
   'Images:',
-  result.outputs.map((o) => o.image.url)
+  result?.result.outputs.map((o) => o.image.url)
 );
 ```
 

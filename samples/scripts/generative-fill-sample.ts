@@ -63,8 +63,8 @@ async function main() {
 
   // 4. Display results
   console.log('\n✅ Fill complete!');
-  console.log(`  Generated ${result.outputs.length} filled images:`);
-  result.outputs.forEach((img, index) => {
+  console.log(`  Generated ${result.result?.outputs.length} filled images:`);
+  result.result?.outputs.forEach((img, index) => {
     console.log(`  ${index + 1}. ${img.image.url}`);
     console.log(`     Seed: ${img.seed}`);
   });

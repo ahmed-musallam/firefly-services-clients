@@ -71,13 +71,13 @@ async function main() {
 
   // 5. Display results
   console.log('\n✅ Expansion complete!');
-  console.log(`  Generated ${result.outputs.length} expanded images:`);
-  result.outputs.forEach((img, index) => {
+  console.log(`  Generated ${result.result?.outputs.length} expanded images:`);
+  result.result?.outputs.forEach((img, index) => {
     console.log(`  ${index + 1}. ${img.image.url}`);
     console.log(`     Seed: ${img.seed}`);
   });
 
-  console.log(`\n📐 Expanded to: ${result.size.width}x${result.size.height}px`);
+  console.log(`\n📐 Expanded to: ${result.result?.size.width}x${result.result?.size.height}px`);
   console.log('💡 Tip: Compare the expanded image with your original!');
 }
 

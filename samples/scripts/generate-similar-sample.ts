@@ -64,8 +64,8 @@ async function main() {
   });
 
   console.log('\n✅ Generation complete!');
-  console.log(`  Generated ${result.outputs.length} similar variations:`);
-  result.outputs.forEach((img, index) => {
+  console.log(`  Generated ${result.result?.outputs.length} similar variations:`);
+  result.result?.outputs.forEach((img, index) => {
     console.log(`  ${index + 1}. ${img.image.url}`);
     console.log(`     Seed: ${img.seed}`);
   });

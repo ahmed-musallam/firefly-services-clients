@@ -75,8 +75,8 @@ async function main() {
 
   // 4. Display results
   console.log('\n✅ Generation complete!');
-  console.log(`  Generated ${result.outputs.length} composite images:`);
-  result.outputs.forEach((img, index) => {
+  console.log(`  Generated ${result.result?.outputs.length} composite images:`);
+  result.result?.outputs.forEach((img, index) => {
     console.log(`  ${index + 1}. ${img.image.url}`);
     console.log(`     Seed: ${img.seed}`);
   });

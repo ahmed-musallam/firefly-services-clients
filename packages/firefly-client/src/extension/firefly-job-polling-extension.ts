@@ -77,7 +77,7 @@ export class PollingTimeoutError extends PollingError {
 export async function pollFireflyJob<TResult>(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<TResult> = {}
-): Promise<TResult> {
+): Promise<JobStatus<TResult>> {
   const { statusUrl } = jobResult;
   const {
     axiosRequestConfig = {},
@@ -115,7 +115,7 @@ export async function pollFireflyJob<TResult>(
 
       // Check terminal states
       if (status.status === 'succeeded') {
-        return status.result as TResult;
+        return status as JobStatus<TResult>;
       }
 
       if (status.status === 'failed') {
@@ -147,42 +147,42 @@ export async function pollFireflyJob<TResult>(
 export async function pollGenerateSimilarJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.GenerateSimilarImagesResponseV3>
-): Promise<FireflyApiClient.GenerateSimilarImagesResponseV3> {
+) {
   return pollFireflyJob<FireflyApiClient.GenerateSimilarImagesResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateImagesJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.GenerateImagesResponseV3>
-): Promise<FireflyApiClient.GenerateImagesResponseV3> {
+) {
   return pollFireflyJob<FireflyApiClient.GenerateImagesResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateObjectCompositeJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.GenerateObjectCompositeResponseV3>
-): Promise<FireflyApiClient.GenerateObjectCompositeResponseV3> {
+) {
   return pollFireflyJob<FireflyApiClient.GenerateObjectCompositeResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateVideoJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.AsyncResult>
-): Promise<FireflyApiClient.AsyncResult> {
+) {
   return pollFireflyJob<FireflyApiClient.AsyncResult>(jobResult, options);
 }
 
 export async function pollGenerateExpandJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.ExpandImageResponseV3>
-): Promise<FireflyApiClient.ExpandImageResponseV3> {
+) {
   return pollFireflyJob<FireflyApiClient.ExpandImageResponseV3>(jobResult, options);
 }
 
 export async function pollGenerateFillJob(
   jobResult: { statusUrl: string },
   options: PollFireflyJobOptions<FireflyApiClient.FillImageResponseV3>
-): Promise<FireflyApiClient.FillImageResponseV3> {
+) {
   return pollFireflyJob<FireflyApiClient.FillImageResponseV3>(jobResult, options);
 }
 
