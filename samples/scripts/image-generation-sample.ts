@@ -42,15 +42,15 @@ async function main() {
 
   // 4. Display results
   console.log('\n✅ Generation complete!');
-  console.log(`  Generated ${result.outputs.length} images:`);
-  result.outputs.forEach((img, index) => {
+  console.log(`  Generated ${result.result?.outputs.length} images:`);
+  result.result?.outputs.forEach((img, index) => {
     console.log(`  ${index + 1}. ${img.image.url}`);
     console.log(`     Seed: ${img.seed}`);
   });
 
   console.log('\n📊 Image details:');
-  console.log(`  Size: ${result.size.width}x${result.size.height}`);
-  console.log(`  Content class: ${result.contentClass}`);
+  console.log(`  Size: ${result.result?.size.width}x${result.result?.size.height}`);
+  console.log(`  Content class: ${result.result?.contentClass}`);
 }
 
 // Run the sample
