@@ -1,3 +1,7 @@
+> [!WARNING]
+> This repo has been archived, please use this one instead: https://github.com/ahmed-musallam/adobe-firefly-client 
+
+
 # Adobe Services Clients Monorepo
 
 A comprehensive TypeScript client library monorepo for Adobe Firefly, Photoshop, and Cloud Storage APIs, with full type safety and modern tooling.
